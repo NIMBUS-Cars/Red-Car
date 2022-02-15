@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find red_car)/settings.yaml"/>
+    <node pkg="red_car" name="real_car_lane_follow" type="real_car_lane_follow" output="screen">
+    </node>
+</launch>
