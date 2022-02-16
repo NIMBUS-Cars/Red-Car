@@ -155,25 +155,26 @@ class LaneFollower{
       ROS_ERROR("cv_bridge exception: %s", e.what());
       return;
     }
-    ROS_INFO("Steering Angle %s",std::to_string(steeringAngle).c_str());
     ackermann_msgs::AckermannDriveStamped drive_st_msg;
     ackermann_msgs::AckermannDrive drive_msg;
     if(fastMode){
         if(carSpeed>1.25){
           carSpeed=1.25;
         }
-        if(abs(steeringAngle) > 0.0872665){ //5 degrees
-          carSpeed=0.75;
+        if(carSpeed>0.9){ //5 degrees
+          steeringAngle*=0.6;
         }
         if(carSpeed<0){
           carSpeed = 0;
         }
-        drive_msg.steering_angle = steeringAngle*-1;
+        drive_msg.steering_angle = steeringAngle*-1 *0.9;
         drive_msg.speed = carSpeed*2;
     }else{
         drive_msg.steering_angle = steeringAngle*-1 * 0.8; // was * 0.8 for normal speed
         drive_msg.speed = carSpeed*2;
     }
+    ROS_INFO("Steering Angle %s",std::to_string(steeringAngle).c_str());
+    ROS_INFO("Speed %s",std::to_string(carSpeed).c_str());
     drive_st_msg.drive = drive_msg;
     drive_pub.publish(drive_st_msg);
 
