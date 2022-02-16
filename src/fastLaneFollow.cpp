@@ -157,8 +157,8 @@ class LaneFollower{
     ackermann_msgs::AckermannDriveStamped drive_st_msg;
     ackermann_msgs::AckermannDrive drive_msg;
     drive_msg.steering_angle = steeringAngle*-1*0.8; // * by 0.75 for 1.75 speed
-    if(carSpeed>2){
-      carSpeed=2;
+    if(carSpeed>1.25){
+      carSpeed=1.25;
     }
     if(carSpeed<0){
       carSpeed = 0;
