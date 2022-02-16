@@ -37,6 +37,8 @@ class LaneFollower{
          n.getParam("/camera_height",camera_height);
          n.getParam("/camera_width",camera_width);
          std::string drive_topic, camera_topic, semanticSegmentationPath, laneFollowPath, imageOutput, object_detection_topic,speedControllerPath;
+         bool fastMode;
+         n.getParam("/in_fast_mode",fastMode);
          n.getParam("/camera_topic",camera_topic);
         image_sub_ = image_transport.subscribe(camera_topic, 1, &LaneFollower::image_callback, this);
          n.getParam("/nav_drive_topic", drive_topic);
@@ -156,17 +158,22 @@ class LaneFollower{
     ROS_INFO("Steering Angle %s",std::to_string(steeringAngle).c_str());
     ackermann_msgs::AckermannDriveStamped drive_st_msg;
     ackermann_msgs::AckermannDrive drive_msg;
-    if(carSpeed>1.25){
-      carSpeed=1.25;
+    if(fastMode){
+        if(carSpeed>1.25){
+          carSpeed=1.25;
+        }
+        if(abs(steeringAngle) > 0.0872665){ //5 degrees
+          carSpeed=0.75;
+        }
+        if(carSpeed<0){
+          carSpeed = 0;
+        }
+        drive_msg.steering_angle = steeringAngle*-1;
+        drive_msg.speed = carSpeed*2;
+    }else{
+        drive_msg.steering_angle = steeringAngle*-1 * 0.8; // was * 0.8 for normal speed
+        drive_msg.speed = carSpeed*2;
     }
-    if(abs(steeringAngle) > 0.0872665){ //5 degrees
-      carSpeed=0.75;
-    }
-    if(carSpeed<0){
-      carSpeed = 0;
-    }
-    drive_msg.steering_angle = steeringAngle*-1; // was * 0.8 for normal speed
-    drive_msg.speed = carSpeed*2;
     drive_st_msg.drive = drive_msg;
     drive_pub.publish(drive_st_msg);
 
