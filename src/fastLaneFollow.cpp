@@ -163,7 +163,7 @@ class LaneFollower{
     if(carSpeed<0){
       carSpeed = 0;
     }
-    drive_msg.speed = carSpeed*1.5;
+    drive_msg.speed = carSpeed*2;
     drive_st_msg.drive = drive_msg;
     drive_pub.publish(drive_st_msg);
 
