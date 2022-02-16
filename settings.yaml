@@ -6,3 +6,4 @@
 /lane_follow_path: "/home/car/f1tenth_ws/src/red_car/laneFollowerNetwork.pt"
 /image_output: "/semantic_segmentation/output"
 /object_detection_topic: "/object_detection/objects"
+/speed_controller_path: "/home/car/f1tenth_ws/src/red_car/speedNetwork.pt"
