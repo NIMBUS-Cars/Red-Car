@@ -31,13 +31,13 @@ class LaneFollower{
     int camera_height,camera_width;
     int desiredX = 256,desiredY=256;
     int outputX = 1280, outputY = 720;
+    bool fastMode;
     public:
     LaneFollower():image_transport(n) {
         n = ros::NodeHandle("~");
          n.getParam("/camera_height",camera_height);
          n.getParam("/camera_width",camera_width);
          std::string drive_topic, camera_topic, semanticSegmentationPath, laneFollowPath, imageOutput, object_detection_topic,speedControllerPath;
-         bool fastMode;
          n.getParam("/in_fast_mode",fastMode);
          n.getParam("/camera_topic",camera_topic);
         image_sub_ = image_transport.subscribe(camera_topic, 1, &LaneFollower::image_callback, this);
