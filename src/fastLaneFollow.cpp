@@ -165,7 +165,7 @@ class LaneFollower{
         if(carSpeed<0){
           carSpeed = 0;
         }
-        drive_msg.steering_angle = steeringAngle*-0.8;
+        drive_msg.steering_angle = steeringAngle*-0.7;
         carSpeed = carSpeed+0.75;
         drive_msg.speed = carSpeed;
     }else{
