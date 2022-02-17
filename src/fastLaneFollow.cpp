@@ -161,7 +161,7 @@ class LaneFollower{
         if(carSpeed>1.25){
           carSpeed=1.25;
         }
-        if(carSpeed>1){ //5 degrees
+        if(carSpeed>=1.2){ //5 degrees
           steeringAngle = steeringAngle * 0.5;
         }
         if(carSpeed<0){
