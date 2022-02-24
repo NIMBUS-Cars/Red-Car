@@ -4,15 +4,13 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/cudaarithm.hpp>
-#include <opencv2/cudafeatures2d.hpp>
 #include <sensor_msgs/Image.h>
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <ackermann_msgs/AckermannDrive.h>
 #include "torch/torch.h"
 #include "torch/script.h"
-#include "default_car/CarObject.h"
-#include "default_car/CarObjects.h"
+#include "red_car/CarObject.h"
+#include "red_car/CarObjects.h"
 
 using namespace std;
 using namespace cv;
@@ -49,7 +47,7 @@ class LaneFollower{
         n.getParam("/image_output",imageOutput);
         image_pub_ = image_transport.advertise(imageOutput, 1);
         n.getParam("/object_detection_topic",object_detection_topic);
-        object_detection_pub = n.advertise<default_car::CarObjects>(object_detection_topic,10);
+        object_detection_pub = n.advertise<red_car::CarObjects>(object_detection_topic,10);
         // Load pytorch model
         try {
           semanticSegmentationModule = torch::jit::load(semanticSegmentationPath);
@@ -76,7 +74,7 @@ class LaneFollower{
       Mat outputMat;
       double steeringAngle = 0;
       double carSpeed = 0;//1,75
-      default_car::CarObjects objectsDetected;
+      red_car::CarObjects objectsDetected;
       bool foundCar = false;
       long minX= 256;
       long maxX=0;
@@ -144,11 +142,9 @@ class LaneFollower{
       //PREPARE FOR CAMERA OUTPUT
       //DISABLE WHEN RUNNING EXPERIMENTS
       at::Tensor prediction = output.permute({1,2,0});
-      prediction=prediction.mul(80).clamp(0,255).to(torch::kU8); // add .mul(80) for visualization
-      cv::cuda::GpuMat predictionMat(cv::Size(desiredX, desiredY), CV_8UC1, prediction.data_ptr<uchar>());
-      Mat notResizedMat;
-      predictionMat.download(notResizedMat);
-      cv::resize(notResizedMat,outputMat,Size(outputX,outputY));
+      prediction=prediction.mul(80).clamp(0,255).to(torch::kU8).to(torch::kCPU); // add .mul(80) for visualization
+      Mat predictionMat(cv::Size(desiredX, desiredY), CV_8UC1, prediction.data_ptr<uchar>());
+      cv::resize(predictionMat,outputMat,Size(outputX,outputY));
     }
     catch (cv_bridge::Exception& e)
     {
@@ -181,7 +177,7 @@ class LaneFollower{
 
     //PUBLISH OBJECT DETECTION DATA
     //TEST DATA
-    default_car::CarObject testObject;
+    red_car::CarObject testObject;
     if(foundCar){
       testObject.classID = 2;
       testObject.minX = minX;
