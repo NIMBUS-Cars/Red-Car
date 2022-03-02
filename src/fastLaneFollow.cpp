@@ -100,31 +100,31 @@ class LaneFollower{
       at::Tensor output = semanticSegmentationModule.forward(inputs).toTensor().argmax(1);
       at::Tensor cpuTensor = output.to("cpu");
       float time3 = std::clock();
-//       //2 = car
-//       //3 = yellow line
-//       auto tensor_accessor = cpuTensor.accessor<long,3>();
-//       for(int i =0; i<tensor_accessor.size(0);i++){
-//         for(int j= 0;j<tensor_accessor.size(1);j++){
-//           for(int k =0;k<tensor_accessor.size(2);k++){
-//             long pixelValue = tensor_accessor[i][j][k];
-//             if(pixelValue ==2){
-//               foundCar = true;
-//               if(j<minY){
-//                 minY=j;
-//               }
-//               if(j>maxY){
-//                 maxY=j;
-//               }
-//               if(k<minX){
-//                 minX=k;
-//               }
-//               if(k>maxX){
-//                 maxX=k;
-//               }
-//             }
-//           }
-//         }
-//       }
+      //2 = car
+      //3 = yellow line
+      auto tensor_accessor = cpuTensor.accessor<long,3>();
+      for(int i =0; i<tensor_accessor.size(0);i++){
+        for(int j= 0;j<tensor_accessor.size(1);j++){
+          for(int k =0;k<tensor_accessor.size(2);k++){
+            long pixelValue = tensor_accessor[i][j][k];
+            if(pixelValue ==2){
+              foundCar = true;
+              if(j<minY){
+                minY=j;
+              }
+              if(j>maxY){
+                maxY=j;
+              }
+              if(k<minX){
+                minX=k;
+              }
+              if(k>maxX){
+                maxX=k;
+              }
+            }
+          }
+        }
+      }
       //Steering Angle
       std::vector<torch::jit::IValue> inputsToLaneFollow;
       inputsToLaneFollow.push_back(output.toType(c10::kFloat).unsqueeze(0));
@@ -175,18 +175,18 @@ class LaneFollower{
     drive_st_msg.drive = drive_msg;
     drive_pub.publish(drive_st_msg);
 
-//     //PUBLISH OBJECT DETECTION DATA
-//     //TEST DATA
-//     red_car::CarObject testObject;
-//     if(foundCar){
-//       testObject.classID = 2;
-//       testObject.minX = minX;
-//       testObject.maxX = maxX;
-//       testObject.minY = minY;
-//       testObject.maxY = maxY;
-//       objectsDetected.objects.push_back(testObject);
-//     }
-//     object_detection_pub.publish(objectsDetected);
+    //PUBLISH OBJECT DETECTION DATA
+    //TEST DATA
+    red_car::CarObject testObject;
+    if(foundCar){
+      testObject.classID = 2;
+      testObject.minX = minX;
+      testObject.maxX = maxX;
+      testObject.minY = minY;
+      testObject.maxY = maxY;
+      objectsDetected.objects.push_back(testObject);
+    }
+    object_detection_pub.publish(objectsDetected);
 
     //Upload Mat Image as ROS TOPIC 
     cv_bridge::CvImage out_msg;
@@ -194,10 +194,24 @@ class LaneFollower{
     out_msg.encoding = sensor_msgs::image_encodings::TYPE_8UC1; 
     out_msg.image    = outputMat;
 
-    // //Upload Mat Image For Recording
-    // //DISABLE WHEN PERFORMING TESTS
+    //Upload Mat Image For Recording
+    //DISABLE WHEN PERFORMING TESTS
     // Mat rosMsgMat;
     // cvtColor(outputMat,rosMsgMat,COLOR_GRAY2BGR);
+    // cv::putText(rosMsgMat, //target image
+    //         "Steering Angle in Degrees: "+to_string(drive_msg.steering_angle*180.0/3.1415926), //text
+    //         cv::Point(10, 80), //top-left position
+    //         cv::FONT_HERSHEY_DUPLEX,
+    //         1.0,
+    //         CV_RGB(118, 185, 0), //font color
+    //         2);
+    // cv::putText(rosMsgMat, //target image
+    //         "Speed in M/S: "+to_string(drive_msg.speed), //text
+    //         cv::Point(10, 140), //top-left position
+    //         cv::FONT_HERSHEY_DUPLEX,
+    //         1.0,
+    //         CV_RGB(118, 185, 0), //font color
+    //         2);
     // cv_bridge::CvImage out_msg;
     // out_msg.header   = msg->header; 
     // out_msg.encoding = sensor_msgs::image_encodings::BGR8; 
@@ -213,3 +227,4 @@ int main(int argc, char ** argv) {
     ros::spin();
     return 0;
 }
+
