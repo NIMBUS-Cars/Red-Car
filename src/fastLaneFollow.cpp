@@ -4,8 +4,6 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/cudaarithm.hpp>
-#include <opencv2/cudafeatures2d.hpp>
 #include <sensor_msgs/Image.h>
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <ackermann_msgs/AckermannDrive.h>
@@ -144,11 +142,9 @@ class LaneFollower{
       //PREPARE FOR CAMERA OUTPUT
       //DISABLE WHEN RUNNING EXPERIMENTS
       at::Tensor prediction = output.permute({1,2,0});
-      prediction=prediction.mul(80).clamp(0,255).to(torch::kU8); // add .mul(80) for visualization
-      cv::cuda::GpuMat predictionMat(cv::Size(desiredX, desiredY), CV_8UC1, prediction.data_ptr<uchar>());
-      Mat notResizedMat;
-      predictionMat.download(notResizedMat);
-      cv::resize(notResizedMat,outputMat,Size(outputX,outputY));
+      prediction=prediction.mul(80).clamp(0,255).to(torch::kU8).to(torch::kCPU); // add .mul(80) for visualization
+      Mat predictionMat(cv::Size(desiredX, desiredY), CV_8UC1, prediction.data_ptr<uchar>());
+      cv::resize(predictionMat,outputMat,Size(outputX,outputY));
     }
     catch (cv_bridge::Exception& e)
     {
@@ -198,10 +194,24 @@ class LaneFollower{
     out_msg.encoding = sensor_msgs::image_encodings::TYPE_8UC1; 
     out_msg.image    = outputMat;
 
-    // //Upload Mat Image For Recording
-    // //DISABLE WHEN PERFORMING TESTS
+    //Upload Mat Image For Recording
+    //DISABLE WHEN PERFORMING TESTS
     // Mat rosMsgMat;
     // cvtColor(outputMat,rosMsgMat,COLOR_GRAY2BGR);
+    // cv::putText(rosMsgMat, //target image
+    //         "Steering Angle in Degrees: "+to_string(drive_msg.steering_angle*180.0/3.1415926), //text
+    //         cv::Point(10, 80), //top-left position
+    //         cv::FONT_HERSHEY_DUPLEX,
+    //         1.0,
+    //         CV_RGB(118, 185, 0), //font color
+    //         2);
+    // cv::putText(rosMsgMat, //target image
+    //         "Speed in M/S: "+to_string(drive_msg.speed), //text
+    //         cv::Point(10, 140), //top-left position
+    //         cv::FONT_HERSHEY_DUPLEX,
+    //         1.0,
+    //         CV_RGB(118, 185, 0), //font color
+    //         2);
     // cv_bridge::CvImage out_msg;
     // out_msg.header   = msg->header; 
     // out_msg.encoding = sensor_msgs::image_encodings::BGR8; 
@@ -214,4 +224,6 @@ class LaneFollower{
 int main(int argc, char ** argv) {
     ros::init(argc, argv, "lane_follower");
     LaneFollower rw;
+    ros::spin();
+    return 0;
 }
