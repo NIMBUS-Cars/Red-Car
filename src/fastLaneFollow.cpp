@@ -176,7 +176,7 @@ public:
         ackermann_msgs::AckermannDriveStamped drive_st_msg;
         ackermann_msgs::AckermannDrive drive_msg;
         drive_msg.steering_angle = steeringAngle;
-        drive_msg.speed = allowableSpeed;
+        drive_msg.speed = allowableSpeed-1;
         drive_st_msg.drive = drive_msg;
         drive_pub.publish(drive_st_msg);
         // ROS_INFO("Angle of Best Direction %s",std::to_string(angleOfFarthestPoint).c_str());
