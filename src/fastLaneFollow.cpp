@@ -161,7 +161,7 @@
 
       ackermann_msgs::AckermannDriveStamped steering_angle;
       steering_angle.drive.steering_angle = new_steering_angle;
-      steering_angle.drive.speed = speed;
+      steering_angle.drive.speed = 1.5;
       ROS_INFO_STREAM(speed);
 
       drive_pub.publish(steering_angle);
