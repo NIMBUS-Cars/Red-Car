@@ -11,8 +11,8 @@
 #include <ackermann_msgs/AckermannDrive.h>
 #include "torch/torch.h"
 #include "torch/script.h"
-#include "default_car/CarObject.h"
-#include "default_car/CarObjects.h"
+#include "red_car/CarObject.h"
+#include "red_car/CarObjects.h"
 
 using namespace std;
 using namespace cv;
@@ -49,7 +49,7 @@ class LaneFollower{
         n.getParam("/image_output",imageOutput);
         image_pub_ = image_transport.advertise(imageOutput, 1);
         n.getParam("/object_detection_topic",object_detection_topic);
-        object_detection_pub = n.advertise<default_car::CarObjects>(object_detection_topic,10);
+        object_detection_pub = n.advertise<red_car::CarObjects>(object_detection_topic,10);
         // Load pytorch model
         try {
           semanticSegmentationModule = torch::jit::load(semanticSegmentationPath);
@@ -76,7 +76,7 @@ class LaneFollower{
       Mat outputMat;
       double steeringAngle = 0;
       double carSpeed = 0;//1,75
-      default_car::CarObjects objectsDetected;
+      red_car::CarObjects objectsDetected;
       bool foundCar = false;
       long minX= 256;
       long maxX=0;
@@ -181,7 +181,7 @@ class LaneFollower{
 
     //PUBLISH OBJECT DETECTION DATA
     //TEST DATA
-    default_car::CarObject testObject;
+    red_car::CarObject testObject;
     if(foundCar){
       testObject.classID = 2;
       testObject.minX = minX;
