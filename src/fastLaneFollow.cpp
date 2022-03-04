@@ -1,198 +1,221 @@
 #include <ros/ros.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/LaserScan.h>
 #include <ackermann_msgs/AckermannDriveStamped.h>
-#include <std_msgs/Bool.h>
-#include <ctime>
-#include <math.h>
-    
+#include <ackermann_msgs/AckermannDrive.h>
+#include <sensor_msgs/LaserScan.h>
+#include <string>
+#include <cmath>
 
-    double RADIUS = 0.4;
-    double car_length = 0.28;
-    double current_speed = 2;
-    // publishers and subscribers
-    ros::Subscriber scan_sub;
+class ReactiveMethod {
+private:
+    // A ROS node
+    ros::NodeHandle n;
+
+    // car parameters
+    double max_speed, max_steering_angle, car_width, car_length, max_acceleration,car_radius;
+
+    // Publish drive data
     ros::Publisher drive_pub;
 
+    //Listens for Laser Scan
+    ros::Subscriber scan_sub;
 
-    void scan_callback(const sensor_msgs::LaserScan::ConstPtr &scan_msg) {
-      double min = 1000000;
-      double min_angle;
-      double inc_angle = scan_msg->angle_min;
-      double increment = scan_msg->angle_increment;
-      std::vector<float> ranges = scan_msg->ranges;
+    //float DISCREPANCY_DISTANCE = .4; 
+    float SCAN_WITHIN_ANGLE = ( 90 / 180.0) *0.95 * M_PI; //ADDED .95 for when it now checks for farthest angle based on how far it can go
+    double currentSpeed = 0;
 
-      //find min distance from car
-      //MIGHT HAVE TO CHANGE RANGE FOR THIS TO MAKE MORE VIABLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      for(int i = 0; i < scan_msg->ranges.size(); i++) {
-        if(inc_angle > -1.57 && inc_angle < 1.57 && scan_msg->ranges[i] < min) {
-          min = scan_msg->ranges[i];
-          min_angle = inc_angle;
+public:
+    ReactiveMethod() {
+        n = ros::NodeHandle("~");
+        std::string drive_topic, scan_topic;
+        n.getParam("/nav_drive_topic", drive_topic);
+        n.getParam("/scan_topic", scan_topic);
+        n.getParam("/max_speed", max_speed);
+        n.getParam("/max_steering_angle", max_steering_angle);
+        n.getParam("/width", car_width);
+        n.getParam("/wheelbase", car_length);
+        n.getParam("/max_decel",max_acceleration);
+        car_radius =sqrt(pow(car_width,2) +pow(car_length,2))/2;
+        drive_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 10);
+        scan_sub = n.subscribe(scan_topic, 1, &ReactiveMethod::scan_callback, this);
+    }
+    void scan_callback(const sensor_msgs::LaserScan::ConstPtr& msg){
+        //things to add
+        // speed that corresponds to how much you can travel with the aeb
+        std::vector<float> safeScanDistances(static_cast<int>(msg->ranges.size()));
+        for(int i = 0; i< static_cast<int>(msg->ranges.size());i++){
+            float test = msg->ranges.at(i);
+            safeScanDistances.at(i) = msg-> ranges.at(i);
         }
-        inc_angle += increment;
-      }
+        for(int i = 0; i< static_cast<int>(msg->ranges.size());i++){
 
-      double inc_angle2 = scan_msg->angle_min;
-      double arc_angle = acos((RADIUS * RADIUS - 2 * min * min) / (-2 * min * min));
-
-      //set all ranges within radius to 0
-      for(int i = 0; i < scan_msg->ranges.size(); i++) {
-        double angle_dist = ranges[i];
-
-        if(inc_angle2 > (min_angle - arc_angle) && inc_angle2 < (min_angle + arc_angle)) {
-          ranges[i] = 0;
+                double radiusToReduceValues = angleToAvoid(msg->ranges.at(i));
+                int indiciesToConsider = static_cast<int>(radiusToReduceValues / msg->angle_increment);
+                for(int j = 0; j< indiciesToConsider;j++){
+                    if(i-j>=0 && safeScanDistances.at(i-j)>msg->ranges.at(i)){
+                        safeScanDistances.at(i-j) = msg->ranges.at(i);
+                         float test = msg->ranges.at(i);
+                    }
+                    if(i+j<static_cast<int>(msg->ranges.size()) && safeScanDistances.at(i+j)>msg->ranges.at(i)){
+                        safeScanDistances.at(i+j)= msg->ranges.at(i);
+                         float test = msg->ranges.at(i);
+                    }
+                }
         }
-        inc_angle2 += increment;
+        int indexOfFarthestValue = static_cast<int>(abs(msg->angle_min/msg->angle_increment));
+        float farthestDistance = safeScanDistances.at(indexOfFarthestValue);
+        for(int i = 0; i< static_cast<int>(msg->ranges.size());i++){
+            if(abs(msg->angle_increment * i + msg->angle_min) < SCAN_WITHIN_ANGLE){
+                if(safeScanDistances.at(i) > farthestDistance){
+                    // indexOfFarthestValue = i;
+                    // farthestDistance = safeScanDistances.at(i);
+                    //Checks to see if angle is ok for pure pursuit so it can choose other angles if the best angle isnt great
+                    
+                    double currentAngle = msg->angle_increment * i + msg->angle_min;
+                    double radiusOfCurvature = abs(pow(safeScanDistances.at(i),2) / (2 * safeScanDistances.at(i) * sin(currentAngle)));
+                    double steeringAngleForCurrentAngle = getSteeringAngleFromRadius(radiusOfCurvature,currentAngle);
+                    if(abs(steeringAngleForCurrentAngle) <max_steering_angle){
+                        indexOfFarthestValue = i;
+                        farthestDistance = safeScanDistances.at(i);
+                    }
 
-      }
-      
-      int biggest_gap = 0;
-      int curr_gap = 0;
-      int last_index = 0;
-
-      //find larger half of array on side of longest set of 0s
-      for(int i = 0; i < scan_msg->ranges.size(); i++) {
-        if(ranges[i] != 0) {
-          curr_gap++;
-          if(curr_gap > biggest_gap) {
-            biggest_gap = curr_gap;
-            last_index = i;
-          }
-        } else {
-          curr_gap = 0;
-        }
-
-      }
-
-      int first_index = last_index - (biggest_gap - 1);
-      float big_gap[biggest_gap];
-      double max = 0;
-      double max_angle = -5;
-      double inc_angle3 = scan_msg->angle_min;
-      double first_angle;
-      double last_angle;
-      
-      //copy max array into its own array that we're gonna iterate through to find max distance from car in subarray
-      //MIGHT HAVE TO LIMIT DEGREES IT CAN GRAB MAX FROM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      for(int i = 0; i < scan_msg->ranges.size(); i++) {
-        if(i >= first_index && i <= last_index && scan_msg->ranges[i] >= max && inc_angle3 > -2 && inc_angle3 < 2) {
-          max = scan_msg->ranges[i];
-          max_angle = inc_angle3;
-        }
-
-        if(i == first_index) {
-          first_angle = inc_angle3;
-        } else if (i == last_index) {
-          last_angle = inc_angle3;
-        }
-
-        inc_angle3 += increment;
-      }
-
-      if(max_angle == -5) {
-        max_angle = 0;
-      }
-
-      double min_dist_between_angles = 100;
-      double inc_angle4 = scan_msg->angle_min;
-
-      for(int i = 0; i < scan_msg->ranges.size(); i++) {
-        if((i >= first_index && i <= last_index) && ((inc_angle4 >= 0 && inc_angle4 <= max_angle) || (inc_angle4 <= 0 && inc_angle4 >= max_angle)) && scan_msg->ranges[i] < min_dist_between_angles) {
-          min_dist_between_angles = scan_msg->ranges[i];
-        }
-        inc_angle4 += increment;
-      }
-
-      if(min_dist_between_angles == 100) {
-        min_dist_between_angles = scan_msg->ranges[540];
-      }
-
-      max = min_dist_between_angles;
-      double radiusOfCurvature = (max * max) / (2 * abs(max * sin(max_angle)));
-      double new_steering_angle = atan(1 / (sqrt((pow(radiusOfCurvature, 2) - pow(car_length / 2, 2)) / pow(car_length, 2))));
-
-      if(max_angle < 0) {
-        new_steering_angle = -new_steering_angle;
-      }
-
-      if(new_steering_angle < first_angle || new_steering_angle > last_angle) {
-        new_steering_angle = max_angle;
-      }
-
-      // calculate ttc to closest wall in front of it ish
-      double inc_angle5 = scan_msg->angle_min;
-      double ttc_angle = 5;
-      double ttc_dist;
-
-      for(int i = 0; i < scan_msg->ranges.size(); i++) {
-        if(inc_angle5 > -0.2 && inc_angle5 < 0.2 && inc_angle5 <= ttc_angle) {
-          ttc_angle = inc_angle5;
-          ttc_dist = scan_msg->ranges[i];
-        }
-        inc_angle5 += increment;
-      }
-
-      double speed_angle = current_speed * cos(ttc_angle);
-
-      double ttc = ttc_dist / speed_angle;
-
-      //new weird shit
-
-      double relativeTTCDist = (ttc-0.5) * current_speed;
-
-      double allowableSpeed = sqrt(2 * 1.7 * relativeTTCDist);
-
-      if(abs(new_steering_angle) >(7.0/180)*M_PI){
-            if(allowableSpeed > 0.8){
-                allowableSpeed = 0.8;
+                }
             }
         }
-
-        if(ttc < 1.1 && allowableSpeed > 2) {
-          allowableSpeed = 2;
+        double angleOfFarthestPoint = msg->angle_increment * indexOfFarthestValue + msg->angle_min;
+        // Pure Pursuit
+        double radiusOfCurvature;
+         int indexOfZero = static_cast<int>(abs(msg->angle_min/msg->angle_increment));
+         //replacing this for the length of the longest angle helps us avoid walls we might face that are between the 0 and the angle to the distance we are looking for that may make our car crash
+         //adjustments were made to base angle to max it the min of the distance in front of it so car can curve properly in long passage ways
+         double minimumAngleToConsider = -abs(atan(car_width/car_length));
+        if(minimumAngleToConsider<-M_PI){
+            minimumAngleToConsider = -M_PI;
         }
-
-      if(allowableSpeed > 2) {
-        allowableSpeed = 2;
-      }
-
-      double speed = allowableSpeed;
-      current_speed = speed;
-
-      ackermann_msgs::AckermannDriveStamped steering_angle;
-      steering_angle.drive.steering_angle = new_steering_angle;
-      steering_angle.drive.speed = 1.5;
-      ROS_INFO_STREAM(speed);
-
-      drive_pub.publish(steering_angle);
-    
-    }
-
-
-    int main(int argc, char **argv)
-    {
-      ros::init(argc, argv, "pure_pursuit");
-      ros::NodeHandle n;
-      n = ros::NodeHandle();
-      std::string drive_topic;
-      n.getParam("/nav_drive_topic", drive_topic);
-
-        scan_sub = n.subscribe<sensor_msgs::LaserScan>("/scan", 1000, scan_callback);
-        drive_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 1000);
-
-        ros::Rate loop_rate(10);
-
-        int count = 0;
-        while (ros::ok())
-        {
-
-          ros::spinOnce();
-
-          loop_rate.sleep();
-          ++count;
+        double maximumAngleToConsider = abs(atan(car_width/car_length));
+        if(maximumAngleToConsider>M_PI){
+            maximumAngleToConsider = M_PI;
         }
-
-
-        return 0;
+        int indexOfMin = (minimumAngleToConsider /msg->angle_increment)+indexOfZero;
+        int indexOfMax = (maximumAngleToConsider /msg->angle_increment)+indexOfZero;
         
+        double shortestDistanceInCurve = std::numeric_limits<double>::infinity();
+            if(angleOfFarthestPoint >0){
+                // was i = indexOfZero
+                for(int i = indexOfMin;i<indexOfFarthestValue;i++){
+                    if(shortestDistanceInCurve>msg->ranges.at(i)){
+                        shortestDistanceInCurve = msg->ranges.at(i);
+                    }
+                }
+            }else{
+                // was i< indexOfZero
+                for(int i = indexOfFarthestValue;i<indexOfMax;i++){
+                    if(shortestDistanceInCurve>msg->ranges.at(i)){
+                        shortestDistanceInCurve = msg->ranges.at(i);
+                    }
+                }
+            }
+        if(abs(angleOfFarthestPoint) < .95 * M_PI){
+        radiusOfCurvature = abs(pow(shortestDistanceInCurve,2) / (2 * shortestDistanceInCurve * sin(angleOfFarthestPoint)));
+        }else{
+            radiusOfCurvature = shortestDistanceInCurve -car_radius * 1.5;
+        }
+        double steeringAngle = getSteeringAngleFromRadius(radiusOfCurvature,angleOfFarthestPoint);
+        
+        // CALCULATE SPEED BASED ON TIME TO COLLISION DIRECTLY IN FRONT OF IT
+        double smallestTTC = std::numeric_limits<double>::infinity();
+        for(int i = indexOfMin;i<indexOfMax;i++){
+            if(i>=0 &&i<static_cast<int>(msg->ranges.size())){
+           if(abs(i*msg->angle_increment + msg->angle_min)<.1){
+              float distance = msg->ranges.at(i) - car_radius; // may need to remove car radius added as test
+              float velocity = currentSpeed; // may need to change back to currentSpeed 
+              float TTC = distance / velocity;
+              if(TTC<smallestTTC){
+                 smallestTTC=TTC;
+              }
+           }else{
+              float distance = msg->ranges.at(i)- car_radius; // may need to remove car radius added as test
+              if(distance <car_width /2 * tan(90 - abs(i*msg->angle_increment + msg->angle_min))){ 
+              float velocity = currentSpeed * cos(abs(i*msg->angle_increment + msg->angle_min)); // may need to change back to currentSpeed  * cos(...)
+              float TTC = distance / velocity;
+              if(TTC<smallestTTC){
+                 smallestTTC=TTC;
+              }
+              }
+
+           }
+            }
+        }
+        double relativeTTCDistance  = (smallestTTC-0.5) *currentSpeed; // removing .2 can be allowed I added this to give it somewhat of a buffer so it will always have .2 TTC worth of a gap in distance
+        if(currentSpeed ==0){
+            relativeTTCDistance = msg->ranges.at(indexOfZero)-car_radius;
+        }
+        if(relativeTTCDistance<0){
+            relativeTTCDistance =0;
+        }
+        //IDEA TO LATER SELF
+        //may not be ideal. you may need a lower acceleration because the vehicle wont use its max acceleration if it thinks it only needs to go down a little bit in velocity
+        // this assumes it is always using its max acceleartion
+        double allowableSpeed = sqrt(2 * max_acceleration * relativeTTCDistance);
+        if(allowableSpeed<0){
+            allowableSpeed = 0;
+        }
+        if(abs(steeringAngle) >(20.0/180)*M_PI){
+            if(allowableSpeed >2){
+                allowableSpeed = 1;
+            }
+        }
+        else if(abs(steeringAngle) >(30.0/180)*M_PI){
+            if(allowableSpeed >1){
+                allowableSpeed = 0.5;
+            }
+        }
+        //TODOS
+        // MAKE ADJUSTMENTS FOR REALLY BIG HALLYWAYS WHERE CURVE GETS TO CLOSE TO THE WALL
+        // ADD A SPACER ON THE SIDE OF THE CAR THAT LIKES TO STAY A DISTANCE FROM THE WALL
+        // THERE SEEMS TO BE ERROS WHEN IT TRIES TO MAKE SHARP TURNS WHEN IT IS LESS THAN THAT RADIUS OF CURATURE CHECK THAT PART OUT
+        ackermann_msgs::AckermannDriveStamped drive_st_msg;
+        ackermann_msgs::AckermannDrive drive_msg;
+        drive_msg.steering_angle = steeringAngle;
+        drive_msg.speed = allowableSpeed;
+        drive_st_msg.drive = drive_msg;
+        drive_pub.publish(drive_st_msg);
+        // ROS_INFO("Angle of Best Direction %s",std::to_string(angleOfFarthestPoint).c_str());
+        // ROS_INFO("Corrected Steering Angle %s",std::to_string(steeringAngle).c_str());
+        // ROS_INFO("TTC DISTANCE: %s",std::to_string(relativeTTCDistance).c_str());
+        // ROS_INFO("Smallest TTC: %s",std::to_string(smallestTTC).c_str());
+        // ROS_INFO("Old Speed: %s",std::to_string(currentSpeed).c_str());
+        // ROS_INFO("Speed of Car: %s",std::to_string(allowableSpeed).c_str());
+        currentSpeed = allowableSpeed;
+        if(currentSpeed<0.5){
+            currentSpeed = 0.5;
+        }
+
     }
+    double angleToAvoid(float distance){
+        float avoidRadius = car_radius * 1.5;
+        return atan(avoidRadius/distance);
+    }
+    double getSteeringAngleFromRadius(double radiusOfCurvature, double angleOfFarthestPoint){
+        double steeringAngle;
+        if(radiusOfCurvature < car_radius && angleOfFarthestPoint <0){
+            steeringAngle = -1 * max_steering_angle;
+        }
+         else if(radiusOfCurvature < car_radius && angleOfFarthestPoint>0){
+            steeringAngle = max_steering_angle;
+        }else{
+            steeringAngle = atan(1/ ( sqrt( (pow(radiusOfCurvature,2) - pow(car_length/2,2)) / pow(car_length,2) ) ) );
+        }
+        if(angleOfFarthestPoint<0){
+            steeringAngle *= -1;
+        }
+        return steeringAngle;
+    }
+
+}; // end of class definition
+
+int main(int argc, char ** argv) {
+    ros::init(argc, argv, "Reactive_Method");
+    ReactiveMethod rw;
+    ros::spin();
+    return 0;
+}
