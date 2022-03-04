@@ -214,3 +214,4 @@ class LaneFollower{
 int main(int argc, char ** argv) {
     ros::init(argc, argv, "lane_follower");
     LaneFollower rw;
+}
