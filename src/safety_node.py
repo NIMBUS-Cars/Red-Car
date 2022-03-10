@@ -37,7 +37,7 @@ class Safety(object):
             "/odom", Odometry, self.odom_callback)
 
         self.brake_pub = rospy.Publisher(
-            "/brake", AckermannDriveStamped, queue_size=10)
+            "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
