@@ -42,7 +42,7 @@ class Safety(object):
             self.drive_topic, AckermannDriveStamped, queue_size=10)
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
-        self.ttc_threshhold = 0.035
+        self.ttc_threshhold = 0.07
 
         # self.drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
         # self.drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
