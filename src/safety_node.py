@@ -85,7 +85,6 @@ class Safety(object):
             print("speed: ", self.drive_msg.speed)
 
             self.drive_st_msg.drive = self.drive_msg
-            self.drive_pub.publish(self.drive_st_msg)
 
             self.angles_array = np.arange(
                 scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
@@ -112,23 +111,24 @@ class Safety(object):
 
             # find the minimum ttc value
             self.min_ttc = np.min(self.ttcs)
-            print("min ttc: ", self.ttcs)
+            print("min ttc: ", self.min_ttc)
             # brake_bool = Bool()
 
-            # # TODO: publish brake message and publish controller bool
-            # if self.min_ttc < self.ttc_threshhold:
-            #     print("Min TTC below Threshhold, Apply brake here")
-            #     # brake_bool.data = True
-            #     self.drive_msg.speed = 0.0
-            #     self.drive_st_msg.drive = self.drive_msg
-            #     self.drive_pub.publish(self.drive_st_msg)
-            #     # self.brake_bool_pub.publish(brake_bool)
-            #     self.brake_bool_pub.publish(True)
+            # TODO: publish brake message and publish controller bool
+            if self.min_ttc < self.ttc_threshhold:
+                print("Min TTC below Threshhold, Apply brake here")
+                # brake_bool.data = True
+                self.drive_msg.speed = 0.0
+                self.drive_st_msg.drive = self.drive_msg
+                self.drive_pub.publish(self.drive_st_msg)
+                # self.brake_bool_pub.publish(brake_bool)
+                self.brake_bool_pub.publish(True)
 
-            # else:
-            #     # brake_bool.data = False
-            #     # self.brake_bool_pub.publish(brake_bool)
-            #     self.brake_bool_pub.publish(False)
+            else:
+                # brake_bool.data = False
+                # self.brake_bool_pub.publish(brake_bool)
+                self.drive_pub.publish(self.drive_st_msg)
+                self.brake_bool_pub.publish(False)
 
 
 def main():
