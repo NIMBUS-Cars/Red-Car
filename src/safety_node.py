@@ -41,7 +41,7 @@ class Safety(object):
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
-        self.ttc_threshhold = 5
+        self.ttc_threshhold = 6
 
     def odom_callback(self, odom_msg):
         # TODO: update current speed
@@ -51,7 +51,7 @@ class Safety(object):
         # print("scan msg", scan_msg)
         # TODO: calculate TTC
         # calculate TTC
-        stationary = 0.001
+        stationary = 0.00001
         #print("ttc_threshhold: ", self.ttc_threshhold)
         #print("speed: ", self.speed)
         if abs(self.speed) > stationary:
@@ -84,23 +84,23 @@ class Safety(object):
 
             # find the minimum ttc value
             self.min_ttc = np.min(self.ttcs)
-            # brake_bool = Bool()
+            brake_bool = Bool()
             print("Min TTC: ", self.min_ttc)
 
             # TODO: publish brake message and publish controller bool
             if self.min_ttc < self.ttc_threshhold:
                 print("Min TTC below Threshhold, Apply brake here: ", self.min_ttc)
-                # brake_bool.data = True
                 self.brake_msg.drive.speed = 0.0
-                # self.brake_bool_pub.publish(brake_bool)
-                self.brake_bool_pub.publish(True)
+                brake_bool.data = True
+                self.brake_bool_pub.publish(brake_bool)
+                # self.brake_bool_pub.publish(True)
                 self.brake_pub.publish(self.brake_msg)
 
             else:
-                # brake_bool.data = False
-                # self.brake_bool_pub.publish(brake_bool)
-                self.brake_bool_pub.publish(False)
-
+                brake_bool.data = False
+                self.brake_bool_pub.publish(brake_bool)
+                #self.brake_bool_pub.publish(False)
+            print("brake_bool: ", brake_bool)
 
 def main():
     rospy.init_node('yuntao_safety', anonymous=True)
