@@ -40,8 +40,8 @@ class Safety(object):
             "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
         #self.brake_bool_pub = rospy.Publisher(
         #    "/brake_bool", Bool, queue_size=10)
-        # self.brake_msg = AckermannDriveStamped()
-        self.brake_msg = AckermannDrive()
+        self.brake_msg = AckermannDriveStamped()
+        #self.brake_msg = AckermannDrive()
         self.ttc_threshhold = 6
 
     def odom_callback(self, odom_msg):
@@ -91,8 +91,8 @@ class Safety(object):
             # TODO: publish brake message and publish controller bool
             if self.min_ttc < self.ttc_threshhold:
                 print("Min TTC below Threshhold, Apply brake here: ", self.min_ttc)
-                #self.brake_msg.drive.speed = 0.0
-                self.brake_msg.speed = 0.0
+                self.brake_msg.drive.speed = 0.0
+                # self.brake_msg.speed = 0.0
 
                 self.brake_pub.publish(self.brake_msg)
                 print("brake_msg when brake: ", brake_msg)
