@@ -98,6 +98,7 @@ class Safety(object):
                 # self.brake_bool_pub.publish(True)
 
             else:
+                self.brake_pub.publish(self.brake_msg)
                 print("brake_msg: ", brake_msg)
                 #brake_bool.data = False
                 #self.brake_bool_pub.publish(brake_bool)
