@@ -52,6 +52,7 @@ class Safety(object):
         # TODO: calculate TTC
         # calculate TTC
         stationary = 0.001
+        print("speed: ", self.speed)
         if abs(self.speed) > stationary:
             self.angles_array = np.arange(
                 scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
