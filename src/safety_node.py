@@ -48,7 +48,7 @@ class Safety(object):
         self.speed = odom_msg.twist.twist.linear.x
 
     def scan_callback(self, scan_msg):
-        print("scan msg", scan_msg)
+        # print("scan msg", scan_msg)
         # TODO: calculate TTC
         # calculate TTC
         stationary = 0.001
@@ -77,6 +77,7 @@ class Safety(object):
             # find the minimum ttc value
             self.min_ttc = np.min(self.ttcs)
             # brake_bool = Bool()
+            print("Min TTC: ", self.min_ttc)
 
             # TODO: publish brake message and publish controller bool
             if self.min_ttc < self.ttc_threshhold:
