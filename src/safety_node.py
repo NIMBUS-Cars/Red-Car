@@ -42,7 +42,7 @@ class Safety(object):
             self.drive_topic, AckermannDriveStamped, queue_size=10)
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
-        self.ttc_threshhold = 0.09
+        self.ttc_threshhold = 0.075
 
         # self.drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
         # self.drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
@@ -84,6 +84,9 @@ class Safety(object):
             print("steering angle: ", self.drive_msg.steering_angle)
             print("speed: ", self.drive_msg.speed)
 
+            print("angle min: ",  scan_msg.angle_min)
+            print("angle max: ",  scan_msg.angle_max)
+
             self.angles_array = np.arange(
                 scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
             self.ranges_array = np.array(scan_msg.ranges)
@@ -124,7 +127,7 @@ class Safety(object):
                 # brake_bool.data = False
                 # self.brake_bool_pub.publish(brake_bool)
                 self.brake_bool_pub.publish(False)
-            
+
             self.drive_st_msg.drive = self.drive_msg
             self.drive_pub.publish(self.drive_st_msg)
 
