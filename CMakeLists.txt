@@ -29,7 +29,7 @@ include_directories(
   ${Torch_INCLUDE_DIRS}
 )
 catkin_install_python(PROGRAMS
-  scripts/safety_node.py
+  src/safety_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
