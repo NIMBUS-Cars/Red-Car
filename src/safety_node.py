@@ -38,10 +38,10 @@ class Safety(object):
 
         self.brake_pub = rospy.Publisher(
             "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
-        self.brake_bool_pub = rospy.Publisher(
-            "/brake_bool", Bool, queue_size=10)
+        # self.brake_bool_pub = rospy.Publisher(
+        #    "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
-        self.ttc_threshhold = 0.5
+        self.ttc_threshhold = 2
         
         #self.drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
         #self.drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
@@ -56,8 +56,10 @@ class Safety(object):
     def scan_callback(self, scan_msg):
         # TODO: calculate TTC
         # calculate TTC
-        stationary = 0.001
+        stationary = 0.00001
+        print(self.speed)
         if abs(self.speed) > stationary:
+            
             self.angles_array = np.arange(
                 scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
             self.ranges_array = np.array(scan_msg.ranges)
