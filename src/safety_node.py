@@ -84,11 +84,10 @@ class Safety(object):
             print("steering angle: ", self.drive_msg.steering_angle)
             print("speed: ", self.drive_msg.speed)
 
-            print("angle min: ",  scan_msg.angle_min)
-            print("angle max: ",  scan_msg.angle_max)
-
-            fixed_angle_min = scan_msg.angle_min + 1.57
-            fixed_angle_max = scan_msg.angle_max - 1.57
+            #fixed_angle_min = scan_msg.angle_min + 1.57
+            #fixed_angle_max = scan_msg.angle_max - 1.57
+            fixed_angle_min = scan_msg.angle_min + 2
+            fixed_angle_max = scan_msg.angle_max -2
 
             print("fixed angle min: ",  fixed_angle_min)
             print("fixed angle max: ",  fixed_angle_max)
@@ -96,6 +95,7 @@ class Safety(object):
             self.angles_array = np.arange(
                 fixed_angle_min, fixed_angle_max, scan_msg.angle_increment)
             self.ranges_array = np.array(scan_msg.ranges)
+            print("ranges_array: ",  self.ranges_array)
 
             # fix denominator
 
