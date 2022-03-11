@@ -34,7 +34,7 @@ class Safety(object):
         self.laser_scan_sub = rospy.Subscriber(
             "/scan", LaserScan, self.scan_callback)
         self.odom_sub = rospy.Subscriber(
-            "/odom", Odometry, self.odom_callback)
+            "/vesc/odom", Odometry, self.odom_callback)
 
         self.brake_pub = rospy.Publisher(
             "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
