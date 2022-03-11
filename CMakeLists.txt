@@ -28,6 +28,11 @@ include_directories(
  ${catkin_INCLUDE_DIRS}
   ${Torch_INCLUDE_DIRS}
 )
-add_executable(real_car_lane_follow src/fastLaneFollow.cpp)
-add_dependencies(real_car_lane_follow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(real_car_lane_follow ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
+catkin_install_python(PROGRAMS
+  src/safety_node.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+#add_executable(real_car_lane_follow src/fastLaneFollow.cpp)
+#add_dependencies(real_car_lane_follow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#target_link_libraries(real_car_lane_follow ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
