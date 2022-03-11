@@ -41,7 +41,7 @@ class Safety(object):
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
-        self.ttc_threshhold = 4
+        self.ttc_threshhold = 5
 
     def odom_callback(self, odom_msg):
         # TODO: update current speed
