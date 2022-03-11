@@ -42,7 +42,7 @@ class Safety(object):
             self.drive_topic, AckermannDriveStamped, queue_size=10)
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
-        self.ttc_threshhold = 0.075
+        self.ttc_threshhold = 0.08
 
         # self.drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
         # self.drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
@@ -90,8 +90,8 @@ class Safety(object):
             fixed_angle_min = scan_msg.angle_min + 1.57
             fixed_angle_max = scan_msg.angle_max - 1.57
 
-            print("fixed angle min: ",  scan_msg.angle_min)
-            print("fixed angle max: ",  scan_msg.angle_max)
+            print("fixed angle min: ",  fixed_angle_min)
+            print("fixed angle max: ",  fixed_angle_max)
 
             self.angles_array = np.arange(
                 fixed_angle_min, fixed_angle_max, scan_msg.angle_increment)
