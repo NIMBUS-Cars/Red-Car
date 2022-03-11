@@ -104,11 +104,11 @@ class Safety(object):
 def main():
     rospy.init_node('yuntao_safety', anonymous=True)
     sn = Safety()
-    drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
-    drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
-    drive_msg = AckermannDriveStamped()
-    drive_msg.drive.speed = 1.0
-    drive.publish(drive_msg)
+#     drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
+#     drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
+#     drive_msg = AckermannDriveStamped()
+#     drive_msg.drive.speed = 1.0
+#     drive.publish(drive_msg)
     rospy.spin()
 
 
