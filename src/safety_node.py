@@ -38,7 +38,7 @@ class Safety(object):
 
         self.brake_pub = rospy.Publisher(
             "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
-        #self.brake_bool_pub = rospy.Publisher(
+        # self.brake_bool_pub = rospy.Publisher(
         #    "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
         self.ttc_threshhold = 2
@@ -52,60 +52,60 @@ class Safety(object):
         # TODO: calculate TTC
         # calculate TTC
         stationary = 0.00001
-        #print("ttc_threshhold: ", self.ttc_threshhold)
-        #print("speed: ", self.speed)
-        if abs(self.speed) > stationary:
-            self.angles_array = np.arange(
-                scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
-            self.ranges_array = np.array(scan_msg.ranges)
-            #print("angles_array: ", self.angles_array)
-            #print("ranges_array: ", self.ranges_array)
+        # print("ttc_threshhold: ", self.ttc_threshhold)
+        # print("speed: ", self.speed)
 
+        self.angles_array = np.arange(
+             scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
+        self.ranges_array = np.array(scan_msg.ranges)
+        # print("angles_array: ", self.angles_array)
+        # print("ranges_array: ", self.ranges_array)
 
-            # fix denominator
+          # fix denominator
 
-            # option 1 --------
-            # self.range_rates = np.max(
-            #    self.speed * np.cos(self.angles_array), 0) + 0.000000001
-            # self.ttcs = (self.ranges_array/self.range_rates)
-            # --------------
+          # option 1 --------
+          # self.range_rates = np.max(
+          #    self.speed * np.cos(self.angles_array), 0) + 0.000000001
+          # self.ttcs = (self.ranges_array/self.range_rates)
+          # --------------
 
-            # option 2 ----------
-            denominator = np.max(self.speed * np.cos(self.angles_array), 0)
-            #print("denominator: ", denominator)
-            if (denominator == 0):
-                self.ttcs = np.inf
-            else:
-                self.range_rates = denominator
-                self.ttcs = (self.ranges_array/self.range_rates)
-                #print("ttcs: ", self.ttcs)
+          # option 2 ----------
+        denominator = np.max(self.speed * np.cos(self.angles_array), 0)
+        # print("denominator: ", denominator)
+        if (denominator == 0):
+            self.ttcs = np.inf
+        else:
+            self.range_rates = denominator
+            self.ttcs = (self.ranges_array/self.range_rates)
+            # print("ttcs: ", self.ttcs)
 
             # ------------
 
             # find the minimum ttc value
-            self.min_ttc = np.min(self.ttcs)
-            #brake_bool = Bool()
-            print("Min TTC: ", self.min_ttc)
+        self.min_ttc = np.min(self.ttcs)
+            # brake_bool = Bool()
+        print("Min TTC: ", self.min_ttc)
 
             # TODO: publish brake message and publish controller bool
-            if self.min_ttc < self.ttc_threshhold:
-                print("Min TTC below Threshhold, Apply brake here: ", self.min_ttc)
-                self.brake_msg.drive.speed = 0.0
+        if self.min_ttc < self.ttc_threshhold:
+            print("Min TTC below Threshhold, Apply brake here: ", self.min_ttc)
+            self.brake_msg.drive.speed = 0.0
                 # self.speed = 0
-                print("brake_msg when brake: ", self.brake_msg.drive)
-                self.brake_pub.publish(self.brake_msg)
-                #brake_bool.data = True
-                #self.brake_bool_pub.publish(brake_bool)
+            print("brake_msg when brake: ", self.brake_msg.drive)
+            self.brake_pub.publish(self.brake_msg)
+                # brake_bool.data = True
+                # self.brake_bool_pub.publish(brake_bool)
                 # self.brake_bool_pub.publish(True)
 
-            else:
-                self.brake_msg.drive.speed = 1
-                print("brake_msg: ", self.brake_msg.drive)
-                self.brake_pub.publish(self.brake_msg)
-                #brake_bool.data = False
-                #self.brake_bool_pub.publish(brake_bool)
-                #self.brake_bool_pub.publish(False)
-            #print("brake_bool: ", brake_bool)
+        else:
+            self.brake_msg.drive.speed = 1
+            print("brake_msg: ", self.brake_msg.drive)
+            self.brake_pub.publish(self.brake_msg)
+                # brake_bool.data = False
+                # self.brake_bool_pub.publish(brake_bool)
+                # self.brake_bool_pub.publish(False)
+            # print("brake_bool: ", brake_bool)
+
 
 def main():
     rospy.init_node('yuntao_safety', anonymous=True)
