@@ -115,20 +115,20 @@ class Safety(object):
             print("min ttc: ", self.ttcs)
             # brake_bool = Bool()
 
-            # TODO: publish brake message and publish controller bool
-            if self.min_ttc < self.ttc_threshhold:
-                print("Min TTC below Threshhold, Apply brake here")
-                # brake_bool.data = True
-                self.drive_msg.speed = 0.0
-                self.drive_st_msg.drive = self.drive_msg
-                self.drive_pub.publish(self.drive_st_msg)
-                # self.brake_bool_pub.publish(brake_bool)
-                self.brake_bool_pub.publish(True)
+            # # TODO: publish brake message and publish controller bool
+            # if self.min_ttc < self.ttc_threshhold:
+            #     print("Min TTC below Threshhold, Apply brake here")
+            #     # brake_bool.data = True
+            #     self.drive_msg.speed = 0.0
+            #     self.drive_st_msg.drive = self.drive_msg
+            #     self.drive_pub.publish(self.drive_st_msg)
+            #     # self.brake_bool_pub.publish(brake_bool)
+            #     self.brake_bool_pub.publish(True)
 
-            else:
-                # brake_bool.data = False
-                # self.brake_bool_pub.publish(brake_bool)
-                self.brake_bool_pub.publish(False)
+            # else:
+            #     # brake_bool.data = False
+            #     # self.brake_bool_pub.publish(brake_bool)
+            #     self.brake_bool_pub.publish(False)
 
 
 def main():
