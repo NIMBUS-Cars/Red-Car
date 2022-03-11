@@ -87,8 +87,14 @@ class Safety(object):
             print("angle min: ",  scan_msg.angle_min)
             print("angle max: ",  scan_msg.angle_max)
 
+            fixed_angle_min = scan_msg.angle_min + 1.57
+            fixed_angle_max = scan_msg.angle_max - 1.57
+
+            print("fixed angle min: ",  scan_msg.angle_min)
+            print("fixed angle max: ",  scan_msg.angle_max)
+
             self.angles_array = np.arange(
-                scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
+                fixed_angle_min, fixed_angle_max, scan_msg.angle_increment)
             self.ranges_array = np.array(scan_msg.ranges)
 
             # fix denominator
