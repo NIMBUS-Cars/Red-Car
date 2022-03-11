@@ -41,7 +41,7 @@ class Safety(object):
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
-        self.ttc_threshhold = 0.35
+        self.ttc_threshhold = 0.5
 
     def odom_callback(self, odom_msg):
         # TODO: update current speed
@@ -52,14 +52,14 @@ class Safety(object):
         # TODO: calculate TTC
         # calculate TTC
         stationary = 0.001
-        print("ttc_threshhold: ", self.ttc_threshhold)
-        print("speed: ", self.speed)
+        #print("ttc_threshhold: ", self.ttc_threshhold)
+        #print("speed: ", self.speed)
         if abs(self.speed) > stationary:
             self.angles_array = np.arange(
                 scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
             self.ranges_array = np.array(scan_msg.ranges)
-            print("angles_array: ", self.angles_array)
-            print("ranges_array: ", self.ranges_array)
+            #print("angles_array: ", self.angles_array)
+            #print("ranges_array: ", self.ranges_array)
 
 
             # fix denominator
@@ -72,13 +72,13 @@ class Safety(object):
 
             # option 2 ----------
             denominator = np.max(self.speed * np.cos(self.angles_array), 0)
-            print("denominator: ", denominator)
+            #print("denominator: ", denominator)
             if (denominator == 0):
                 self.ttcs = np.inf
             else:
                 self.range_rates = denominator
                 self.ttcs = (self.ranges_array/self.range_rates)
-                print("ttcs: ", self.ttcs)
+                #print("ttcs: ", self.ttcs)
 
             # ------------
 
