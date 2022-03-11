@@ -57,79 +57,78 @@ class Safety(object):
     def scan_callback(self, scan_msg):
         # TODO: calculate TTC
         # calculate TTC
-        # stationary = 0.00001
+        stationary = 0.001
         # print(self.speed)
-        # if abs(self.speed) > stationary:
-        
-        # print("scan_msg: ", scan_msg)
+        if abs(self.speed) > stationary:
 
-        steeringAngle = 0.00
+            # print("scan_msg: ", scan_msg)
 
-        self.drive_st_msg = AckermannDriveStamped()
-        self.drive_msg = AckermannDrive()
+            steeringAngle = 0.00
 
-        if(self.speed > 1.25):
-            self.speed = 1.25
+            self.drive_st_msg = AckermannDriveStamped()
+            self.drive_msg = AckermannDrive()
 
-        if(self.speed < 0):
-            self.speed = 0
+            if(self.speed > 1):
+                self.speed = 0.5
 
-        if(self.speed <= 1.0):
-            steeringAngle = steeringAngle / 0.75 * 0.9
+            if(self.speed < 0):
+                self.speed = 0
 
-        self.drive_msg.steering_angle = steeringAngle*-0.75
-        self.speed = self.speed+0.75
-        self.drive_msg.speed = self.speed
+            if(self.speed <= 1.0):
+                steeringAngle = steeringAngle / 0.75 * 0.9
 
-        print("steering angle: ", self.drive_msg.steering_angle)
-        print("speed: " , self.drive_msg.speed)
-
-        self.drive_st_msg.drive = self.drive_msg
-        self.drive_pub.publish(self.drive_st_msg)
-
-        self.angles_array = np.arange(
-            scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
-        self.ranges_array = np.array(scan_msg.ranges)
-
-        # fix denominator
-
-        # option 1 --------
-        # self.range_rates = np.max(
-        #    self.speed * np.cos(self.angles_array), 0) + 0.000000001
-        # self.ttcs = (self.ranges_array/self.range_rates)
-        # --------------
-
-        # option 2 ----------
-        denominator = np.max(self.speed * np.cos(self.angles_array), 0)
-        if (denominator == 0):
-            self.ttcs = np.inf
-        else:
-            self.range_rates = denominator
-            self.ttcs = (self.ranges_array/self.range_rates)
-            # print("ttcs: ", self.ttcs)
-
-        # ------------
-
-        # find the minimum ttc value
-        self.min_ttc = np.min(self.ttcs)
-        print("min ttc: ", self.ttcs)
-        # brake_bool = Bool()
-
-        # TODO: publish brake message and publish controller bool
-        if self.min_ttc < self.ttc_threshhold:
-            print("Min TTC below Threshhold, Apply brake here")
-            # brake_bool.data = True
-            self.speed = 0
+            self.drive_msg.steering_angle = steeringAngle*-0.75
+            self.speed = self.speed+0.75
             self.drive_msg.speed = self.speed
+
+            print("steering angle: ", self.drive_msg.steering_angle)
+            print("speed: ", self.drive_msg.speed)
+
             self.drive_st_msg.drive = self.drive_msg
             self.drive_pub.publish(self.drive_st_msg)
-            # self.brake_bool_pub.publish(brake_bool)
-            self.brake_bool_pub.publish(True)
 
-        else:
-            # brake_bool.data = False
-            # self.brake_bool_pub.publish(brake_bool)
-            self.brake_bool_pub.publish(False)
+            self.angles_array = np.arange(
+                scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
+            self.ranges_array = np.array(scan_msg.ranges)
+
+            # fix denominator
+
+            # option 1 --------
+            # self.range_rates = np.max(
+            #    self.speed * np.cos(self.angles_array), 0) + 0.000000001
+            # self.ttcs = (self.ranges_array/self.range_rates)
+            # --------------
+
+            # option 2 ----------
+            denominator = np.max(self.speed * np.cos(self.angles_array), 0)
+            if (denominator == 0):
+                self.ttcs = np.inf
+            else:
+                self.range_rates = denominator
+                self.ttcs = (self.ranges_array/self.range_rates)
+                # print("ttcs: ", self.ttcs)
+
+            # ------------
+
+            # find the minimum ttc value
+            self.min_ttc = np.min(self.ttcs)
+            print("min ttc: ", self.ttcs)
+            # brake_bool = Bool()
+
+            # TODO: publish brake message and publish controller bool
+            if self.min_ttc < self.ttc_threshhold:
+                print("Min TTC below Threshhold, Apply brake here")
+                # brake_bool.data = True
+                self.drive_msg.speed = 0.0
+                self.drive_st_msg.drive = self.drive_msg
+                self.drive_pub.publish(self.drive_st_msg)
+                # self.brake_bool_pub.publish(brake_bool)
+                self.brake_bool_pub.publish(True)
+
+            else:
+                # brake_bool.data = False
+                # self.brake_bool_pub.publish(brake_bool)
+                self.brake_bool_pub.publish(False)
 
 
 def main():
