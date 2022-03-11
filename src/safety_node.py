@@ -37,7 +37,7 @@ class Safety(object):
             "/vesc/odom", Odometry, self.odom_callback)
 
         self.brake_pub = rospy.Publisher(
-            "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
+            "/brake", AckermannDriveStamped, queue_size=10)
         self.brake_bool_pub = rospy.Publisher(
            "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
@@ -106,11 +106,9 @@ class Safety(object):
 def main():
     rospy.init_node('yuntao_safety', anonymous=True)
     sn = Safety()
-#     drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
-#     drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
-#     drive_msg = AckermannDriveStamped()
-#     drive_msg.drive.speed = 1.0
-#     drive.publish(drive_msg)
+    drive_pub = rospy.Publisher("/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
+    drive_msg = AckermannDriveStamped()
+    drive_msg.drive.speed = 1.0
     rospy.spin()
 
 
