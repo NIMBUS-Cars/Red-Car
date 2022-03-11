@@ -92,13 +92,13 @@ class Safety(object):
                 print("Min TTC below Threshhold, Apply brake here: ", self.min_ttc)
                 self.brake_msg.drive.speed = 0.0
                 self.brake_pub.publish(self.brake_msg)
-                print("brake_msg: ", brake_msg)
+                print("brake_msg when brake: ", brake_msg)
                 #brake_bool.data = True
                 #self.brake_bool_pub.publish(brake_bool)
                 # self.brake_bool_pub.publish(True)
 
             else:
-                
+                print("brake_msg: ", brake_msg)
                 #brake_bool.data = False
                 #self.brake_bool_pub.publish(brake_bool)
                 #self.brake_bool_pub.publish(False)
