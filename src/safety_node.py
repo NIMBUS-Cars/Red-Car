@@ -60,6 +60,7 @@ class Safety(object):
         # stationary = 0.00001
         # print(self.speed)
         # if abs(self.speed) > stationary:
+        print("scan_msg: ", scan_msg)
 
         steeringAngle = 0.00
 
