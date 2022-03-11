@@ -43,11 +43,11 @@ class Safety(object):
         self.brake_msg = AckermannDriveStamped()
         self.ttc_threshhold = 0.5
         
-        self.drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
-        self.drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
-        self.drive_msg = AckermannDriveStamped()
-        self.drive_msg.drive.speed = 1.0
-        self.drive.publish(drive_msg)
+        #self.drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
+        #self.drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
+        #self.drive_msg = AckermannDriveStamped()
+        #self.drive_msg.drive.speed = 1.0
+        #self.drive.publish(drive_msg)
 
     def odom_callback(self, odom_msg):
         # TODO: update current speed
@@ -104,6 +104,11 @@ class Safety(object):
 def main():
     rospy.init_node('yuntao_safety', anonymous=True)
     sn = Safety()
+    drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
+    drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
+    drive_msg = AckermannDriveStamped()
+    drive_msg.drive.speed = 1.0
+    drive.publish(drive_msg)
     rospy.spin()
 
 
