@@ -72,6 +72,8 @@ class Safety(object):
             else:
                 self.range_rates = denominator
                 self.ttcs = (self.ranges_array/self.range_rates)
+                print("ttcs: ", self.ttcs)
+
             # ------------
 
             # find the minimum ttc value
