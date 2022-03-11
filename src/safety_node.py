@@ -56,6 +56,9 @@ class Safety(object):
             self.angles_array = np.arange(
                 scan_msg.angle_min, scan_msg.angle_max, scan_msg.angle_increment)
             self.ranges_array = np.array(scan_msg.ranges)
+            print("angles_array: ", self.angles_array)
+            print("ranges_array: ", self.ranges_array)
+
 
             # fix denominator
 
@@ -67,6 +70,7 @@ class Safety(object):
 
             # option 2 ----------
             denominator = np.max(self.speed * np.cos(self.angles_array), 0)
+            print("denominator: ", denominator)
             if (denominator == 0):
                 self.ttcs = np.inf
             else:
