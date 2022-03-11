@@ -38,8 +38,8 @@ class Safety(object):
 
         self.brake_pub = rospy.Publisher(
             "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
-        self.brake_bool_pub = rospy.Publisher(
-            "/brake_bool", Bool, queue_size=10)
+        #self.brake_bool_pub = rospy.Publisher(
+        #    "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
         self.ttc_threshhold = 6
 
@@ -84,23 +84,24 @@ class Safety(object):
 
             # find the minimum ttc value
             self.min_ttc = np.min(self.ttcs)
-            brake_bool = Bool()
+            #brake_bool = Bool()
             print("Min TTC: ", self.min_ttc)
 
             # TODO: publish brake message and publish controller bool
             if self.min_ttc < self.ttc_threshhold:
                 print("Min TTC below Threshhold, Apply brake here: ", self.min_ttc)
                 self.brake_msg.drive.speed = 0.0
-                brake_bool.data = True
-                self.brake_bool_pub.publish(brake_bool)
-                # self.brake_bool_pub.publish(True)
                 self.brake_pub.publish(self.brake_msg)
+                #brake_bool.data = True
+                #self.brake_bool_pub.publish(brake_bool)
+                # self.brake_bool_pub.publish(True)
 
             else:
-                brake_bool.data = False
-                self.brake_bool_pub.publish(brake_bool)
+                
+                #brake_bool.data = False
+                #self.brake_bool_pub.publish(brake_bool)
                 #self.brake_bool_pub.publish(False)
-            print("brake_bool: ", brake_bool)
+            #print("brake_bool: ", brake_bool)
 
 def main():
     rospy.init_node('yuntao_safety', anonymous=True)
