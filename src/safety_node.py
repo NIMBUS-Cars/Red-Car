@@ -42,7 +42,7 @@ class Safety(object):
             self.drive_topic, AckermannDriveStamped, queue_size=10)
         self.brake_bool_pub = rospy.Publisher(
             "/brake_bool", Bool, queue_size=10)
-        self.ttc_threshhold = 1
+        self.ttc_threshhold = 5
 
         # self.drive_topic = rospy.get_param('/vesc/high_level/ackermann_cmd_mux/input/auto_drive')
         # self.drive = rospy.Publisher(drive_topic, AckermannDriveStamped, queue_size=10)
@@ -60,6 +60,7 @@ class Safety(object):
         # stationary = 0.00001
         # print(self.speed)
         # if abs(self.speed) > stationary:
+        
         # print("scan_msg: ", scan_msg)
 
         steeringAngle = 0.00
@@ -118,10 +119,12 @@ class Safety(object):
         if self.min_ttc < self.ttc_threshhold:
             print("Min TTC below Threshhold, Apply brake here")
             # brake_bool.data = True
-            self.brake_msg.drive.speed = 0.0
+            self.speed = 0
+            self.drive_msg.speed = self.speed
+            self.drive_st_msg.drive = self.drive_msg
+            self.drive_pub.publish(self.drive_st_msg)
             # self.brake_bool_pub.publish(brake_bool)
             self.brake_bool_pub.publish(True)
-            self.brake_pub.publish(self.brake_msg)
 
         else:
             # brake_bool.data = False
