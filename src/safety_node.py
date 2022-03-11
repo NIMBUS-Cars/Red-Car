@@ -38,8 +38,8 @@ class Safety(object):
 
         self.brake_pub = rospy.Publisher(
             "/vesc/high_level/ackermann_cmd_mux/input/nav_0", AckermannDriveStamped, queue_size=10)
-        # self.brake_bool_pub = rospy.Publisher(
-        #    "/brake_bool", Bool, queue_size=10)
+        self.brake_bool_pub = rospy.Publisher(
+           "/brake_bool", Bool, queue_size=10)
         self.brake_msg = AckermannDriveStamped()
         self.ttc_threshhold = 2
         
