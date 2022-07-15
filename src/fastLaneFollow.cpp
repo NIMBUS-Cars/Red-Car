@@ -49,7 +49,7 @@ class LaneFollower{
         n.getParam("/image_output",imageOutput);
         image_pub_ = image_transport.advertise(imageOutput, 1);
         n.getParam("/object_detection_topic",object_detection_topic);
-        object_detection_pub = n.advertise<default_car::CarObjects>(object_detection_topic,10);
+        object_detection_pub = n.advertise<red_car::CarObjects>(object_detection_topic,10);
         // Load pytorch model
         try {
           semanticSegmentationModule = torch::jit::load(semanticSegmentationPath);
@@ -76,7 +76,7 @@ class LaneFollower{
       Mat outputMat;
       double steeringAngle = 0;
       double carSpeed = 0;//1,75
-      default_car::CarObjects objectsDetected;
+      red_car::CarObjects objectsDetected;
       bool foundCar = false;
       long minX= 256;
       long maxX=0;
@@ -129,7 +129,7 @@ class LaneFollower{
       }
       //Steering Angle
       std::vector<torch::jit::IValue> inputsToLaneFollow;
-      inputsToLaneFollow.push_back(output.toType(c10::kFloat).unsqueeze(0));
+      inputsToLaneFollowpush_back(output.toType(c10::kFloat).unsqueeze(0));
       at::Tensor outputSteeringAngle = laneFollowModule.forward(inputsToLaneFollow).toTensor();
       steeringAngle = outputSteeringAngle[0].item().toDouble();
       //Speed
@@ -181,7 +181,7 @@ class LaneFollower{
 
     //PUBLISH OBJECT DETECTION DATA
     //TEST DATA
-    default_car::CarObject testObject;
+    red_car::CarObject testObject;
     if(foundCar){
       testObject.classID = 2;
       testObject.minX = minX;
