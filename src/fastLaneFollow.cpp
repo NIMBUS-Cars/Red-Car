@@ -165,14 +165,14 @@ class LaneFollower{
           carSpeed = 0;
         }
         if(carSpeed<=1.0){
-          steeringAngle = steeringAngle;
+          steeringAngle = steeringAngle*0.9;
         }
         drive_msg.steering_angle = -1 * steeringAngle;
         carSpeed = carSpeed+0.75;
-        drive_msg.speed = 1.25; //carSpeed;
+        drive_msg.speed = 1.75; //carSpeed;
     }else{
         drive_msg.steering_angle = -1 * steeringAngle;
-        drive_msg.speed = 1.25; //carSpeed;
+        drive_msg.speed = 1.75; //carSpeed;
     }
     ROS_INFO("Steering Angle %s",std::to_string(steeringAngle).c_str());
     ROS_INFO("Speed %s",std::to_string(carSpeed).c_str());
