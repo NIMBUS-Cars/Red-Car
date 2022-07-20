@@ -129,7 +129,7 @@ class LaneFollower{
       }
       //Steering Angle
       std::vector<torch::jit::IValue> inputsToLaneFollow;
-      inputsToLaneFollowpush_back(output.toType(c10::kFloat).unsqueeze(0));
+      inputsToLaneFollow.push_back(output.toType(c10::kFloat).unsqueeze(0));
       at::Tensor outputSteeringAngle = laneFollowModule.forward(inputsToLaneFollow).toTensor();
       steeringAngle = outputSteeringAngle[0].item().toDouble();
       //Speed
