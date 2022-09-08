@@ -4,15 +4,13 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/cudaarithm.hpp>
-#include <opencv2/cudafeatures2d.hpp>
 #include <sensor_msgs/Image.h>
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <ackermann_msgs/AckermannDrive.h>
 #include "torch/torch.h"
 #include "torch/script.h"
-#include "red_car/CarObject.h"
-#include "red_car/CarObjects.h"
+#include "car/CarObject.h"
+#include "car/CarObjects.h"
 
 using namespace std;
 using namespace cv;
@@ -49,7 +47,7 @@ class LaneFollower{
         n.getParam("/image_output",imageOutput);
         image_pub_ = image_transport.advertise(imageOutput, 1);
         n.getParam("/object_detection_topic",object_detection_topic);
-        object_detection_pub = n.advertise<red_car::CarObjects>(object_detection_topic,10);
+        object_detection_pub = n.advertise<car::CarObjects>(object_detection_topic,10);
         // Load pytorch model
         try {
           semanticSegmentationModule = torch::jit::load(semanticSegmentationPath);
@@ -76,7 +74,7 @@ class LaneFollower{
       Mat outputMat;
       double steeringAngle = 0;
       double carSpeed = 0;//1,75
-      red_car::CarObjects objectsDetected;
+      car::CarObjects objectsDetected;
       bool foundCar = false;
       long minX= 256;
       long maxX=0;
@@ -144,11 +142,9 @@ class LaneFollower{
       //PREPARE FOR CAMERA OUTPUT
       //DISABLE WHEN RUNNING EXPERIMENTS
       at::Tensor prediction = output.permute({1,2,0});
-      prediction=prediction.mul(80).clamp(0,255).to(torch::kU8); // add .mul(80) for visualization
-      cv::cuda::GpuMat predictionMat(cv::Size(desiredX, desiredY), CV_8UC1, prediction.data_ptr<uchar>());
-      Mat notResizedMat;
-      predictionMat.download(notResizedMat);
-      cv::resize(notResizedMat,outputMat,Size(outputX,outputY));
+      prediction=prediction.mul(80).clamp(0,255).to(torch::kU8).to(torch::kCPU); // add .mul(80) for visualization
+      Mat predictionMat(cv::Size(desiredX, desiredY), CV_8UC1, prediction.data_ptr<uchar>());
+      cv::resize(predictionMat,outputMat,Size(outputX,outputY));
     }
     catch (cv_bridge::Exception& e)
     {
@@ -165,15 +161,17 @@ class LaneFollower{
           carSpeed = 0;
         }
         if(carSpeed<=1.0){
-          steeringAngle = steeringAngle/0.75*0.9;
+          steeringAngle = steeringAngle / 0.75 * 0.9;
         }
-        drive_msg.steering_angle = -1 * steeringAngle *0.75;
+        drive_msg.steering_angle = steeringAngle*-0.75;
         carSpeed = carSpeed+0.75;
-        drive_msg.speed = 1.6; //carSpeed;
+        drive_msg.speed = carSpeed;
     }else{
-        drive_msg.steering_angle = -1 * steeringAngle*0.8;
-        drive_msg.speed = 1.6; //carSpeed;
+        drive_msg.steering_angle = steeringAngle*-1 * 0.8; // was * 0.8 for normal speed
+        drive_msg.speed = carSpeed;
     }
+    //TEMP SLOW DOWN
+    drive_msg.speed = 0.8;
     ROS_INFO("Steering Angle %s",std::to_string(steeringAngle).c_str());
     ROS_INFO("Speed %s",std::to_string(carSpeed).c_str());
     drive_st_msg.drive = drive_msg;
@@ -181,7 +179,7 @@ class LaneFollower{
 
     //PUBLISH OBJECT DETECTION DATA
     //TEST DATA
-    red_car::CarObject testObject;
+    car::CarObject testObject;
     if(foundCar){
       testObject.classID = 2;
       testObject.minX = minX;
@@ -197,15 +195,6 @@ class LaneFollower{
     out_msg.header   = msg->header; 
     out_msg.encoding = sensor_msgs::image_encodings::TYPE_8UC1; 
     out_msg.image    = outputMat;
-
-    // //Upload Mat Image For Recording
-    // //DISABLE WHEN PERFORMING TESTS
-    // Mat rosMsgMat;
-    // cvtColor(outputMat,rosMsgMat,COLOR_GRAY2BGR);
-    // cv_bridge::CvImage out_msg;
-    // out_msg.header   = msg->header; 
-    // out_msg.encoding = sensor_msgs::image_encodings::BGR8; 
-    // out_msg.image    = rosMsgMat;
 
     // Output modified video stream
     image_pub_.publish(out_msg.toImageMsg());
