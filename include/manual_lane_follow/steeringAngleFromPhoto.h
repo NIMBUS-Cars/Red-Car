@@ -91,7 +91,7 @@ double get_steering_angle_from_mat(cv::Mat imageinRGB){
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return 0;
     }
-    return steeringAngle *-1;
+    return steeringAngle;
     
 }
 int laneFinder(vector<vector<double> > wLines, vector<vector<double> > yLines, int lane)

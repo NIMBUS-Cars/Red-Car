@@ -32,10 +32,10 @@ public:
         \**--------------------------------------------------**/
         double carSpeed;
         double laneMidPointCorrectionCoefficient = (M_PI / 6) / 640 * 1.25;
-        double TURN_CONST_HARD_OUT = 5.0;// was 3.0;
-        double TURN_CONST_SOFT_OUT = 5.0;
-        double TURN_CONST_HARD_IN = 4.0;
-        double TURN_CONST_SOFT_IN = 4.0;
+        double TURN_CONST_HARD_OUT = 3.0;
+        double TURN_CONST_SOFT_OUT = 4.0;
+        double TURN_CONST_HARD_IN = 2.5;
+        double TURN_CONST_SOFT_IN = 3.5;
         double CENT_CORR_CONST = -0.0005;
         double SPEED_CONST = 0.75;
 
