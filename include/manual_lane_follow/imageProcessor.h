@@ -33,14 +33,14 @@ public:
     }
     Mat getBlur(Scalar yLower, Scalar yUpper, Mat croppedImage)
     {
-
-        Mat yuv_img;
-        cvtColor(croppedImage, yuv_img, CV_BGR2YUV);
-        std::vector<Mat> channels;
-        split(yuv_img, channels);
-        equalizeHist(channels[0], channels[0]);
-        merge(channels, yuv_img);
-        cvtColor(yuv_img, croppedImage, CV_YUV2BGR);
+        //EQUALIZING BAD ON NEW TRACK
+        // Mat yuv_img;
+        // cvtColor(croppedImage, yuv_img, CV_BGR2YUV);
+        // std::vector<Mat> channels;
+        // split(yuv_img, channels);
+        // equalizeHist(channels[0], channels[0]);
+        // merge(channels, yuv_img);
+        // cvtColor(yuv_img, croppedImage, CV_YUV2BGR);
         //Yellow Line Detection
         Mat imageInHSV;
         cvtColor(croppedImage, imageInHSV, COLOR_BGR2HSV);
