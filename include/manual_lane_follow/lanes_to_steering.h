@@ -23,10 +23,13 @@ public:
         \**--------------------------------------------------**/
         // 6-1 FOR CONSTS
         double INNER_TANH_CONSTANT = 0.5;
-        double OUTER_TAHN_CONSTANT = 0.4;
+        double OUTER_TAHN_CONSTANT = 0.5;
         double CENTER_X = 0.5;
         double WHITE_SLOPE_ADJUSTMENT_CONSTANT = 3;
         double YELLOW_SLOPE_ADJUSTMENT_CONSTANT = 3;
+        double WHITE_LANE_CENTERING = 0.4;
+        double YELLOW_LANE_CENTERING = 0.35;
+        double CENTERING_STEERING_CONSTANT = 2;
         /** -------------------------------------------------**\
         * -------------YELLOW & WHITE LANES FOUND------------- *
         \**--------------------------------------------------**/
@@ -47,6 +50,20 @@ public:
                 adjustedYSlope = 0.01;
             }
             steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * ((adjustedYSlope+adjustedWSlope)/2));
+            double lane_centering_adjustment = 0;
+            if(ySlope<0 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
+                lane_centering_adjustment += ((1-YELLOW_LANE_CENTERING) - yXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            if(ySlope>0 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
+                lane_centering_adjustment += (YELLOW_LANE_CENTERING - yXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            if(wSlope<0 && wXCoord< 1-WHITE_LANE_CENTERING){ // left turning
+                lane_centering_adjustment += ((1-WHITE_LANE_CENTERING) - wXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            if(wSlope>0 && wXCoord > WHITE_LANE_CENTERING){ // right turning
+                lane_centering_adjustment += (WHITE_LANE_CENTERING - wXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            steeringAngle += lane_centering_adjustment;
         }
         /** -------------------------------------------------**\
         * ---------------CONTROL FOR INNER LANES-------------- *
@@ -58,6 +75,14 @@ public:
             double yXCoord = yellowLaneLines.at(0).at(0);
             double adjustedYSlope = -1 * (ySlope + (yXCoord - CENTER_X) * YELLOW_SLOPE_ADJUSTMENT_CONSTANT);
             steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * adjustedYSlope);
+            double lane_centering_adjustment = 0;
+            if(ySlope<0 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
+                lane_centering_adjustment += ((1-YELLOW_LANE_CENTERING) - yXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            if(ySlope>0 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
+                lane_centering_adjustment += (YELLOW_LANE_CENTERING - yXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            steeringAngle += lane_centering_adjustment;
          }
         /** -------------------------------------------------**\
         * ---------------CONTROL FOR OUTER LANES-------------- *
@@ -70,8 +95,18 @@ public:
             double wSlope = whiteLaneLines.at(0).at(1);
             double wXCoord = whiteLaneLines.at(0).at(0);
             double adjustedWSlope = -1 * (wSlope + (wXCoord - CENTER_X) *WHITE_SLOPE_ADJUSTMENT_CONSTANT);
-
+            if(adjustedWSlope == 0){
+                adjustedWSlope = 0.01;
+            }
             steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * adjustedWSlope);
+            double lane_centering_adjustment = 0;
+            if(wSlope<0 && wXCoord< 1-WHITE_LANE_CENTERING){ // left turning
+                lane_centering_adjustment += ((1-WHITE_LANE_CENTERING) - wXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            if(wSlope>0 && wXCoord > WHITE_LANE_CENTERING){ // right turning
+                lane_centering_adjustment += (WHITE_LANE_CENTERING - wXCoord) * CENTERING_STEERING_CONSTANT;
+            }
+            steeringAngle += lane_centering_adjustment;
             
         }
         return steeringAngle;

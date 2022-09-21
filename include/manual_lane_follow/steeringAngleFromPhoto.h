@@ -43,7 +43,6 @@ class ManualSteeringControl{
             Rect crop(0, 450, 1280, 270);
                 Mat croppedImage;
                 croppedImage = imageinRGB(crop);
-                // imshow("Crop",croppedImage);
                 //White mins and maxes for Hue-Saturation-Value model
 
                 Scalar wLower(whmin, wsmin, wvmin);
@@ -59,21 +58,21 @@ class ManualSteeringControl{
                 //Gets the blurred images for they white and yellow lines
                 Mat yBlur = i.getBlur(yLower, yUpper, croppedImage);
                 Mat wBlur = i.getBlur(wLower, wUpper, croppedImage);
-                // imshow("White Blur", wBlur);
                 vector<vector<double> > yellowLaneLines;
                 vector<vector<double> > whiteLaneLines;       
 
                 Mat yErodeMat = i.getErode(yBlur);
                 Mat wErodeMat = i.getErode(wBlur);
-                // imshow("Yellow",yErodeMat);
-                // imshow("White", wErodeMat);
-                // waitKey(3);
+
                 //Processes images using Hough Transform and adds all slopes and intercepts along the bottom of image to the vector
                 yellowLaneLines = i.processImage(yErodeMat);
                 whiteLaneLines = i.processImage(wErodeMat);
                 ROS_INFO("Yellow Lines: %s White Lines: %s",std::to_string(yellowLaneLines.size()).c_str(),std::to_string(whiteLaneLines.size()).c_str());
 
-
+                imshow("Crop",croppedImage);
+                imshow("Yellow",yErodeMat);
+                imshow("White", wErodeMat);
+                waitKey(3);
 
 
                 //Finds total number of lanes found
