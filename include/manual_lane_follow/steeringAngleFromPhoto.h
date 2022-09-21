@@ -18,20 +18,20 @@ class ManualSteeringControl{
     int whmin = 50, whmax = 179, wsmin = 0, wsmax = 73, wvmin = 221, wvmax = 255;
     int yhmin = 25, yhmax = 40, ysmin = 5, ysmax = 255, yvmin = 200, yvmax = 255;
     ManualSteeringControl(){
-        namedWindow("White Trackbar",(640,200));
-        createTrackbar("Hue min","White Trackbar",&whmin,179);
-        createTrackbar("Hue max","White Trackbar",&whmax,179);
-        createTrackbar("Sat min","White Trackbar",&wsmin,255);
-        createTrackbar("Sat max","White Trackbar",&wsmax,255);
-        createTrackbar("Val min","White Trackbar",&wvmin,255);
-        createTrackbar("Val max","White Trackbar",&wvmax,255);
-        namedWindow("Yellow Trackbar",(640,200));
-        createTrackbar("Hue min","Yellow Trackbar",&yhmin,179);
-        createTrackbar("Hue max","Yellow Trackbar",&yhmax,179);
-        createTrackbar("Sat min","Yellow Trackbar",&ysmin,255);
-        createTrackbar("Sat max","Yellow Trackbar",&ysmax,255);
-        createTrackbar("Val min","Yellow Trackbar",&yvmin,255);
-        createTrackbar("Val max","Yellow Trackbar",&yvmax,255);
+        // namedWindow("White Trackbar",(640,200));
+        // createTrackbar("Hue min","White Trackbar",&whmin,179);
+        // createTrackbar("Hue max","White Trackbar",&whmax,179);
+        // createTrackbar("Sat min","White Trackbar",&wsmin,255);
+        // createTrackbar("Sat max","White Trackbar",&wsmax,255);
+        // createTrackbar("Val min","White Trackbar",&wvmin,255);
+        // createTrackbar("Val max","White Trackbar",&wvmax,255);
+        // namedWindow("Yellow Trackbar",(640,200));
+        // createTrackbar("Hue min","Yellow Trackbar",&yhmin,179);
+        // createTrackbar("Hue max","Yellow Trackbar",&yhmax,179);
+        // createTrackbar("Sat min","Yellow Trackbar",&ysmin,255);
+        // createTrackbar("Sat max","Yellow Trackbar",&ysmax,255);
+        // createTrackbar("Val min","Yellow Trackbar",&yvmin,255);
+        // createTrackbar("Val max","Yellow Trackbar",&yvmax,255);
     }
     //should be 720 x 1280 rbg image
     //do not read implementation. This was mixed from mutiple files and will not make sense.
@@ -43,7 +43,7 @@ class ManualSteeringControl{
             Rect crop(0, 450, 1280, 270);
                 Mat croppedImage;
                 croppedImage = imageinRGB(crop);
-                // imshow("Crop",croppedImage);
+                imshow("Crop",croppedImage);
                 //White mins and maxes for Hue-Saturation-Value model
 
                 Scalar wLower(whmin, wsmin, wvmin);
@@ -65,9 +65,9 @@ class ManualSteeringControl{
 
                 Mat yErodeMat = i.getErode(yBlur);
                 Mat wErodeMat = i.getErode(wBlur);
-                // imshow("Yellow",yErodeMat);
-                // imshow("White", wErodeMat);
-                // waitKey(3);
+                imshow("Yellow",yErodeMat);
+                imshow("White", wErodeMat);
+                waitKey(3);
                 //Processes images using Hough Transform and adds all slopes and intercepts along the bottom of image to the vector
                 yellowLaneLines = i.processImage(yErodeMat);
                 whiteLaneLines = i.processImage(wErodeMat);

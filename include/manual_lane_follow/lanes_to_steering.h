@@ -25,7 +25,8 @@ public:
         double INNER_TANH_CONSTANT = 0.5;
         double OUTER_TAHN_CONSTANT = 0.4;
         double CENTER_X = 0.5;
-        double SLOPE_ADJUSTMENT_CONSTANT =3;
+        double WHITE_SLOPE_ADJUSTMENT_CONSTANT = 3;
+        double YELLOW_SLOPE_ADJUSTMENT_CONSTANT = 3;
         /** -------------------------------------------------**\
         * -------------YELLOW & WHITE LANES FOUND------------- *
         \**--------------------------------------------------**/
@@ -37,8 +38,8 @@ public:
             double wXCoord = whiteLaneLines.at(0).at(0); //X coordinate of the white line (at the bottom of the image)
             double ySlope = yellowLaneLines.at(0).at(1); //Slope of the yellow line
             double yXCoord = yellowLaneLines.at(0).at(0); //X coordinate of the yellow line (at the bottom of the image)
-            double adjustedWSlope = -1 * (wSlope + (wXCoord - CENTER_X) * SLOPE_ADJUSTMENT_CONSTANT);
-            double adjustedYSlope = ySlope + (yXCoord - CENTER_X) *  SLOPE_ADJUSTMENT_CONSTANT;
+            double adjustedWSlope = -1 * (wSlope + (wXCoord - CENTER_X) * WHITE_SLOPE_ADJUSTMENT_CONSTANT);
+            double adjustedYSlope = -1 * (ySlope + (yXCoord - CENTER_X) *  YELLOW_SLOPE_ADJUSTMENT_CONSTANT);
             if(adjustedWSlope == 0){
                 adjustedWSlope = 0.01;
             }
@@ -55,7 +56,7 @@ public:
             //ROS_INFO("ONLY YELLOW LANE FOUND");
             double ySlope = yellowLaneLines.at(0).at(1);
             double yXCoord = yellowLaneLines.at(0).at(0);
-            double adjustedYSlope = ySlope + (yXCoord - CENTER_X) * SLOPE_ADJUSTMENT_CONSTANT;
+            double adjustedYSlope = -1 * (ySlope + (yXCoord - CENTER_X) * YELLOW_SLOPE_ADJUSTMENT_CONSTANT);
             steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * adjustedYSlope);
          }
         /** -------------------------------------------------**\
@@ -68,7 +69,7 @@ public:
             //Most likely making a left turn in the right lane
             double wSlope = whiteLaneLines.at(0).at(1);
             double wXCoord = whiteLaneLines.at(0).at(0);
-            double adjustedWSlope = -1 * (wSlope + (wXCoord - CENTER_X) *SLOPE_ADJUSTMENT_CONSTANT);
+            double adjustedWSlope = -1 * (wSlope + (wXCoord - CENTER_X) *WHITE_SLOPE_ADJUSTMENT_CONSTANT);
 
             steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * adjustedWSlope);
             
