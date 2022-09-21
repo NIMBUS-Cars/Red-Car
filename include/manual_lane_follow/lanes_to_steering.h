@@ -14,7 +14,7 @@ double slope(Point first, Point second);
 class Control
 {
 public:
-    static double steerSpeed(vector<vector<double>> yellowLaneLines, vector<vector<double>> whiteLaneLines, int laneNumber)
+    static double steer(vector<vector<double>> yellowLaneLines, vector<vector<double>> whiteLaneLines, int laneNumber)
     {
         double steeringAngle;
 
