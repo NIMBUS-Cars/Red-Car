@@ -23,13 +23,13 @@ public:
         \**--------------------------------------------------**/
         // 6-1 FOR CONSTS
         double INNER_TANH_CONSTANT = 0.5;
-        double OUTER_TAHN_CONSTANT = 0.5;
+        double OUTER_TAHN_CONSTANT = 0.4;
         double CENTER_X = 0.5;
         double WHITE_SLOPE_ADJUSTMENT_CONSTANT = 3;
         double YELLOW_SLOPE_ADJUSTMENT_CONSTANT = 3;
         double WHITE_LANE_CENTERING = 0.3;
         double YELLOW_LANE_CENTERING = 0.3;
-        double CENTERING_STEERING_CONSTANT = 2;
+        double CENTERING_STEERING_CONSTANT = 0.5;
         /** -------------------------------------------------**\
         * -------------YELLOW & WHITE LANES FOUND------------- *
         \**--------------------------------------------------**/
@@ -109,11 +109,11 @@ public:
             steeringAngle += lane_centering_adjustment;
             
         }
-        if(steeringAngle >0.45){
-            return 0.45;
+        if(steeringAngle >0.40){
+            return 0.40;
         }
-        if(steeringAngle <-0.45){
-            return -0.45;
+        if(steeringAngle <-0.40){
+            return -0.40;
         }
         return steeringAngle;
     }
