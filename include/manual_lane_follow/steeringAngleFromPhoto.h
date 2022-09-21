@@ -53,7 +53,7 @@ class ManualSteeringControl{
                 Scalar yUpper(yhmax, ysmax, yvmax);
 
                 //Create ImageProcessor (From Header file)
-                LaneDetector i;
+                ImageProcessor i;
 
                 //Gets the blurred images for they white and yellow lines
                 Mat yBlur = i.getBlur(yLower, yUpper, croppedImage);
