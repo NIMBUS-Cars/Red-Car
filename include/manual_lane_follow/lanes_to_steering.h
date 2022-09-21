@@ -27,9 +27,9 @@ public:
         double CENTER_X = 0.5;
         double WHITE_SLOPE_ADJUSTMENT_CONSTANT = 3;
         double YELLOW_SLOPE_ADJUSTMENT_CONSTANT = 3;
-        double WHITE_LANE_CENTERING = 0.4;
-        double YELLOW_LANE_CENTERING = 0.35;
-        double CENTERING_STEERING_CONSTANT = 2;
+        double WHITE_LANE_CENTERING = 0.3;
+        double YELLOW_LANE_CENTERING = 0.3
+        double CENTERING_STEERING_CONSTANT = 3;
         /** -------------------------------------------------**\
         * -------------YELLOW & WHITE LANES FOUND------------- *
         \**--------------------------------------------------**/
