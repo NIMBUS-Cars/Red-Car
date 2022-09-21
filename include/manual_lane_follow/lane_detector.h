@@ -50,14 +50,14 @@ public:
         GaussianBlur(yColorFiltered, yBlurredImage, Size(5, 5), 0);
         return yBlurredImage;
     }
-    vector<vector<double>> processImage(Mat yErodeMat, Mat yBlurredImage)
+    vector<vector<double>> processImage(Mat yErodeMat)
     {
         Mat displayForYellowLines(270, 960, CV_8UC3, Scalar(0, 0, 0));
 
         vector<int> countOfYellowLinesAddedToEachLane;
         vector<vector<double>> yellowLaneLines;
 
-        if (yBlurredImage.size().height > 20)
+        if (yErodeMat.size().height > 20)
         {
             vector<Vec4i> yellowLines;
             vector<vector<Point>> yellowPointsForLines;
