@@ -37,9 +37,9 @@ public:
             ROS_INFO("TWO LANES FOUND");
             //Get solpes and intercepts from vectors
             double wSlope = whiteLaneLines.at(0).at(1); //Slope of the white line
-            double wXCoord = whiteLaneLines.at(0).at(0)*1280; //X coordinate of the white line (at the bottom of the image)
+            double wXCoord = whiteLaneLines.at(0).at(0)*960; //X coordinate of the white line (at the bottom of the image)
             double ySlope = yellowLaneLines.at(0).at(1); //Slope of the yellow line
-            double yXCoord = yellowLaneLines.at(0).at(0)*1280; //X coordinate of the yellow line (at the bottom of the image)
+            double yXCoord = yellowLaneLines.at(0).at(0)*960; //X coordinate of the yellow line (at the bottom of the image)
             double distFromCenter = 0;
             if (laneNumber == 0)
             {
@@ -68,7 +68,7 @@ public:
             ///No white lane found but yellow lane found
             //Most likely making a right turn in right la
             double ySlope = yellowLaneLines.at(0).at(1) / 1.5; //This /1.5 just works since we do not have 2 slopes to average out
-            double yXCoord = yellowLaneLines.at(0).at(0)*1280;
+            double yXCoord = yellowLaneLines.at(0).at(0)*960;
 
             if (laneNumber == 0 && yXCoord <= 500)
             {
@@ -120,7 +120,7 @@ public:
             ///No yelow lane found but white lane found
             //Most likely making a left turn in the right lane
             double wSlope = whiteLaneLines.at(0).at(1) / 1.5; //This /1.5 just works since we do not have 2 slopes to average out
-            double wXCoord = whiteLaneLines.at(0).at(0)*1280;
+            double wXCoord = whiteLaneLines.at(0).at(0)*960;
             if (laneNumber == 0 && wXCoord >= 500)
             {
                 ROS_INFO("LEFT LANE HARD RIGHT TURN");
