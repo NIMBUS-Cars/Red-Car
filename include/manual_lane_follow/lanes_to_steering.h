@@ -27,9 +27,9 @@ public:
         double CENTER_X = 0.5;
         double WHITE_SLOPE_ADJUSTMENT_CONSTANT = 3;
         double YELLOW_SLOPE_ADJUSTMENT_CONSTANT = 3;
-        double WHITE_LANE_CENTERING = 0.2;
-        double YELLOW_LANE_CENTERING = 0.2;
-        double CENTERING_STEERING_CONSTANT = 3;
+        double WHITE_LANE_CENTERING = 0.3;
+        double YELLOW_LANE_CENTERING = 0.3;
+        double CENTERING_STEERING_CONSTANT = 2;
         /** -------------------------------------------------**\
         * -------------YELLOW & WHITE LANES FOUND------------- *
         \**--------------------------------------------------**/
@@ -51,10 +51,10 @@ public:
             }
             steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * ((adjustedYSlope+adjustedWSlope)/2));
             double lane_centering_adjustment = 0;
-            if(ySlope<0 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
+            if(yXCoord>0.5 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
                 lane_centering_adjustment += ((1-YELLOW_LANE_CENTERING) - yXCoord) * CENTERING_STEERING_CONSTANT;
             }
-            if(ySlope>0 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
+            if(yXCoord<0.5 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
                 lane_centering_adjustment += (YELLOW_LANE_CENTERING - yXCoord) * CENTERING_STEERING_CONSTANT;
             }
             if(wSlope<0 && wXCoord< 1-WHITE_LANE_CENTERING){ // left turning
@@ -76,10 +76,10 @@ public:
             double adjustedYSlope = -1 * (ySlope + (yXCoord - CENTER_X) * YELLOW_SLOPE_ADJUSTMENT_CONSTANT);
             steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * adjustedYSlope);
             double lane_centering_adjustment = 0;
-            if(ySlope<0 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
+            if(yXCoord>0.5 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
                 lane_centering_adjustment += ((1-YELLOW_LANE_CENTERING) - yXCoord) * CENTERING_STEERING_CONSTANT;
             }
-            if(ySlope>0 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
+            if(yXCoord<0.5 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
                 lane_centering_adjustment += (YELLOW_LANE_CENTERING - yXCoord) * CENTERING_STEERING_CONSTANT;
             }
             steeringAngle += lane_centering_adjustment;
