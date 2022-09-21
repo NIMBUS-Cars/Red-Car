@@ -156,6 +156,6 @@ public:
                 steeringAngle += CENT_CORR_CONST * (125 - wXCoord);
             }
         }
-        return steeringAngle * -1;
+        return steeringAngle;
     }
 };
