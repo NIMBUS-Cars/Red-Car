@@ -1,12 +1,3 @@
-/**
- * 
- * @author Will Anderson
- * 
- * This file handels the steering calculation based on which lane lines are found and where in the image they are
- * I have used a hyperbolic tangent function to control the steering of the vehicle since this allows for maxing out the angle at 0.4, the max steering angle of the car
- * 
- **/
-
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -20,24 +11,28 @@ using namespace std;
 using namespace cv;
 double slope(Point first, Point second);
 
-class ControlConst
+class Control
 {
 public:
-    static vector<double> steerSpeed(vector<vector<double>> yellowLaneLines, vector<vector<double>> whiteLaneLines, int laneNumber)
+    static double steer(vector<vector<double>> yellowLaneLines, vector<vector<double>> whiteLaneLines, int laneNumber)
     {
-        double steeringAngle;
+        double steeringAngle = std::numeric_limits<double>::quiet_NaN();
 
         /** -------------------------------------------------**\
         * ------------------Define Constants------------------ *
         \**--------------------------------------------------**/
-        double carSpeed;
-        double laneMidPointCorrectionCoefficient = (M_PI / 6) / 640 * 1.25;
-        double TURN_CONST_HARD_OUT = 3.0;
-        double TURN_CONST_SOFT_OUT = 4.0;
-        double TURN_CONST_HARD_IN = 2.5;
-        double TURN_CONST_SOFT_IN = 3.5;
+
+        double laneMidPointCorrectionCoefficient = 0;//(M_PI / 6) / 640 * 1.25;
+        // double TURN_CONST_HARD_OUT = 3.0;
+        // double TURN_CONST_SOFT_OUT = 4.0;
+        // double TURN_CONST_HARD_IN = 2.5;
+        // double TURN_CONST_SOFT_IN = 3.5;
+        // double CENT_CORR_CONST = -0.0005;
+        double TURN_CONST_HARD_OUT = 5.0;
+        double TURN_CONST_SOFT_OUT = 2.0;
+        double TURN_CONST_HARD_IN = 5.0;
+        double TURN_CONST_SOFT_IN = 2.0;
         double CENT_CORR_CONST = -0.0005;
-        double SPEED_CONST = 0.75;
 
         /** -------------------------------------------------**\
         * -------------YELLOW & WHITE LANES FOUND------------- *
@@ -67,7 +62,6 @@ public:
             double avgSlope = (wSlope + ySlope) / 2 + difInSlope / 2;
             //Using hyperbolic tangent * the max steering angle to find the necesary steering angle
             steeringAngle = 0.4 * tanh(avgSlope / TURN_CONST_HARD_OUT) + CENT_CORR_CONST * distFromCenter;
-            carSpeed = SPEED_CONST;
         }
         /** -------------------------------------------------**\
         * ---------------CONTROL FOR INNER LANES-------------- *
@@ -84,30 +78,21 @@ public:
             {
                 //ROS_INFO("LEFT LANE HARD LEFT TURN");
                 steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_HARD_IN);
-                carSpeed = 0.75;
             }
             else if (laneNumber == 0 && yXCoord > 500)
             {
                 //ROS_INFO("LEFT LANE SOFT LEFT TURN");
                 steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_SOFT_IN);
-                carSpeed = 1.0;
             }
             else if (laneNumber == 1 && yXCoord <= 300)
             {
                 //ROS_INFO("RIGHT LANE SOFT RIGHT TURN");
                 steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_SOFT_IN);
-                carSpeed = 1.0;
             }
             else if (laneNumber == 1 && yXCoord > 300)
             {
                 //ROS_INFO("RIGHT LANE HARD RIGHT TURN");
                 steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_HARD_IN);
-                carSpeed = 0.75;
-            }
-            else
-            {
-                //ROS_INFO("Can't Determine Steering Angle");
-                carSpeed = 0.75;
             }
 
             //Center correction control once the car is almopst fully around the corner (when the slope returns to less than 1.5)
@@ -119,7 +104,6 @@ public:
             {
                 steeringAngle += CENT_CORR_CONST * (125 - yXCoord);
             }
-            carSpeed = SPEED_CONST;
         }
         /** -------------------------------------------------**\
         * ---------------CONTROL FOR OUTER LANES-------------- *
@@ -135,32 +119,22 @@ public:
             {
                 //ROS_INFO("LEFT LANE HARD RIGHT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_HARD_OUT);
-                carSpeed = 0.75;
             }
             else if (laneNumber == 0 && wXCoord < 500)
             {
                 //ROS_INFO("LEFT LANE SOFT RIGHT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_SOFT_OUT);
-                carSpeed = 1.0;
             }
             else if (laneNumber == 1 && wXCoord >= 625)
             {
                 //ROS_INFO("RIGHT LANE SOFT LEFT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_SOFT_OUT);
-                carSpeed = 1.0;
             }
             else if (laneNumber == 1 && wXCoord < 625)
             {
                 //ROS_INFO("RIGHT LANE HARD LEFT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_HARD_OUT);
-                carSpeed = 0.75;
             }
-            else
-            {
-                //ROS_INFO("Can't Determine Steering Angle");
-                carSpeed = 0.75;
-            }
-
             //Center correction control once the car is almopst fully around the corner (when the slope returns to less than 1.5)
             if (abs(wSlope) < 1.5 && laneNumber == 1)
             {
@@ -170,31 +144,24 @@ public:
             {
                 steeringAngle += CENT_CORR_CONST * (125 - wXCoord);
             }
-            carSpeed = SPEED_CONST;
         }
         /** -------------------------------------------------**\
         * -------------------NO LANES FOUND------------------- *
         \**--------------------------------------------------**/
-        else
-        {
-            //ROS_INFO("No lane lines found");
-            if (laneNumber == 0)
-            {
-                //ROS_INFO("LEFT LANE, TURNING RIGHT TO REAQUIRE LANES");
-                steeringAngle = 0.2;
-            }
-            else
-            {
-                //ROS_INFO("RIGHT LANE, TURNING LEFT TO REAQUIRE LANES");
-                steeringAngle = -0.2;
-            }
-            carSpeed = SPEED_CONST;
-        }
-
-        vector<double> speedSteer;
-        speedSteer.push_back(carSpeed);
-        speedSteer.push_back(steeringAngle);
-
-        return speedSteer;
+        // else
+        // {
+        //     //ROS_INFO("No lane lines found");
+        //     if (laneNumber == 0)
+        //     {
+        //         //ROS_INFO("LEFT LANE, TURNING RIGHT TO REAQUIRE LANES");
+        //         steeringAngle = 0.2;
+        //     }
+        //     else
+        //     {
+        //         //ROS_INFO("RIGHT LANE, TURNING LEFT TO REAQUIRE LANES");
+        //         steeringAngle = -0.2;
+        //     }
+        // }
+        return steeringAngle *-1;
     }
 };

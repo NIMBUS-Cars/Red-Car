@@ -9,6 +9,7 @@
 #include <ackermann_msgs/AckermannDriveStamped.h>
 #include <ackermann_msgs/AckermannDrive.h>
 #include <manual_lane_follow/steeringAngleFromPhoto.h>
+#include <cmath>
 using namespace std;
 using namespace cv;
 
@@ -18,6 +19,8 @@ class LaneFollower{
     image_transport::ImageTransport image_transport;
     image_transport::Subscriber image_sub_;
     ros::Publisher drive_pub;
+    ManualSteeringControl manualSteeringControl;
+    double previous_steering_angle = 0;
     public:
     LaneFollower():image_transport(n) {
         n = ros::NodeHandle("~");
@@ -40,9 +43,14 @@ class LaneFollower{
     try
     {
         cv_bridge::CvImagePtr cv_ptr;
-        cv_ptr = cv_bridge::toCvCopy(msg, "");
+        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
         Mat imageInRGB = cv_ptr->image;
-        steeringAngle = get_steering_angle_from_mat(imageInRGB);
+        steeringAngle = manualSteeringControl.get_steering_angle_from_mat(imageInRGB);
+        if(isnan(steeringAngle)){
+          steeringAngle = previous_steering_angle;
+        }else{
+          previous_steering_angle = steeringAngle;
+        }
     }
     catch (cv_bridge::Exception& e)
     {
@@ -51,10 +59,10 @@ class LaneFollower{
     }
     ackermann_msgs::AckermannDriveStamped drive_st_msg;
     ackermann_msgs::AckermannDrive drive_msg;
-    drive_msg.steering_angle = steeringAngle*-1;
-    drive_msg.speed = 0.8;
-    ROS_INFO("Steering Angle %s",std::to_string(steeringAngle).c_str());
-    ROS_INFO("Speed %s",std::to_string(carSpeed).c_str());
+    drive_msg.steering_angle = steeringAngle;
+    drive_msg.speed = 0.7;
+    
+    // ROS_INFO("Steering Angle %s",std::to_string(steeringAngle).c_str());
     drive_st_msg.drive = drive_msg;
     drive_pub.publish(drive_st_msg);
   }

@@ -13,7 +13,7 @@ double slope(Point first, Point second);
 
 using namespace std;
 
-class ImageProcessor
+class LaneDetector
 {
 
 public:
@@ -33,15 +33,6 @@ public:
     }
     Mat getBlur(Scalar yLower, Scalar yUpper, Mat croppedImage)
     {
-        //EQUALIZING BAD ON NEW TRACK
-        // Mat yuv_img;
-        // cvtColor(croppedImage, yuv_img, CV_BGR2YUV);
-        // std::vector<Mat> channels;
-        // split(yuv_img, channels);
-        // equalizeHist(channels[0], channels[0]);
-        // merge(channels, yuv_img);
-        // cvtColor(yuv_img, croppedImage, CV_YUV2BGR);
-        //Yellow Line Detection
         Mat imageInHSV;
         cvtColor(croppedImage, imageInHSV, COLOR_BGR2HSV);
         Mat yColorFiltered;
@@ -121,5 +112,21 @@ public:
             }
         }
         return yellowLaneLines;
+    }
+    double slope(Point first,Point second){
+    // slope is taken such that horizontal side of camera is y axis where right side is positive and left side is negative
+    // vertical side of camera is x axis where top side would be positve and bottom side is negative
+    // so 0,0 to 1,1 should output -1
+    // any line leaning left in the camera will have a negative slope
+    // any line leaning right in the camera should have a positive slope
+    // slopes close to zero are straight lines
+    double secondX = second.x;
+    double secondY = second.y;
+    double firstX  = first.x;
+    double firstY = first.y;
+        if(second.y - first.y == 0 ){
+        return 0;
+        }
+        return (-1.0 * (second.x - first.x )) / (second.y - first.y);
     }
 };
