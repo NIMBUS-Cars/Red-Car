@@ -16,7 +16,7 @@ using namespace std;
 class LaneDetector
 {
     double line_seperation_distance = 0.3; // 300px / 1280px from testing
-    double image_width = 1280.0;
+    double image_width = 960.0;
     double min_height_percent_to_consider_line = 240;
 public:
     Mat getErode(Mat yBlurredImage)
