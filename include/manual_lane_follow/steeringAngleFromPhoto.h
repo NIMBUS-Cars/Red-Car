@@ -40,7 +40,7 @@ class ManualSteeringControl{
         double carSpeed = 0.5;
         try
         {
-            Rect crop(0, 450, 1280, 270);
+            Rect crop(250, 450, 960, 270);
                 Mat croppedImage;
                 croppedImage = imageinRGB(crop);
                 //White mins and maxes for Hue-Saturation-Value model
