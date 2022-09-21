@@ -33,25 +33,25 @@ include_directories(
   ${Torch_INCLUDE_DIRS}
 )
 
-add_executable(semantic_segmentation src/semantic_segmentation/semantic_segmentation.cpp)
-add_dependencies(semantic_segmentation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(semantic_segmentation ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
+# add_executable(semantic_segmentation src/semantic_segmentation/semantic_segmentation.cpp)
+# add_dependencies(semantic_segmentation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(semantic_segmentation ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
 
-add_executable(simple_lane_follow src/simple_lane_follow/simple_lane_follow.cpp)
-add_dependencies(simple_lane_follow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(simple_lane_follow ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
+# add_executable(simple_lane_follow src/simple_lane_follow/simple_lane_follow.cpp)
+# add_dependencies(simple_lane_follow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(simple_lane_follow ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
 
-add_executable(end_to_end_lane_follow src/end_to_end_lane_follow/end_to_end_lane_follow.cpp)
-add_dependencies(end_to_end_lane_follow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(end_to_end_lane_follow ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
+# add_executable(end_to_end_lane_follow src/end_to_end_lane_follow/end_to_end_lane_follow.cpp)
+# add_dependencies(end_to_end_lane_follow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(end_to_end_lane_follow ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
 
 add_executable(manual_lane_follow src/manual_lane_follow/manual_lane_follow.cpp)
 add_dependencies(manual_lane_follow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(manual_lane_follow ${catkin_LIBRARIES} ${TORCH_LIBRARIES})
 
-add_executable(overtaking src/overtaking/overtaking.cpp)
-add_dependencies(overtaking ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(overtaking ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
+# add_executable(overtaking src/overtaking/overtaking.cpp)
+# add_dependencies(overtaking ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(overtaking ${catkin_LIBRARIES} ${TORCH_LIBRARIES}) 
 
 
 # add_executable(car_tracker src/car_tracker/car_tracker.cpp)
