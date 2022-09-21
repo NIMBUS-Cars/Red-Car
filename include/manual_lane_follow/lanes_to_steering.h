@@ -17,103 +17,144 @@ public:
     static double steer(vector<vector<double>> yellowLaneLines, vector<vector<double>> whiteLaneLines, int laneNumber)
     {
         double steeringAngle = std::numeric_limits<double>::quiet_NaN();
-
         /** -------------------------------------------------**\
         * ------------------Define Constants------------------ *
         \**--------------------------------------------------**/
-        // 6-1 FOR CONSTS
-        double INNER_TANH_CONSTANT = 0.5;
-        double OUTER_TAHN_CONSTANT = 0.4;
-        double CENTER_X = 0.5;
-        double WHITE_SLOPE_ADJUSTMENT_CONSTANT = 3;
-        double YELLOW_SLOPE_ADJUSTMENT_CONSTANT = 3;
-        double WHITE_LANE_CENTERING = 0.3;
-        double YELLOW_LANE_CENTERING = 0.3;
-        double CENTERING_STEERING_CONSTANT = 0;
+        double carSpeed;
+        double laneMidPointCorrectionCoefficient = (M_PI / 6) / 640 * 1.25;
+        double TURN_CONST_HARD_OUT = 3.0;
+        double TURN_CONST_SOFT_OUT = 4.0;
+        double TURN_CONST_HARD_IN = 2.5;
+        double TURN_CONST_SOFT_IN = 3.5;
+        double CENT_CORR_CONST = -0.0005;
+        double SPEED_CONST = 0.75;
+
         /** -------------------------------------------------**\
         * -------------YELLOW & WHITE LANES FOUND------------- *
         \**--------------------------------------------------**/
         if (static_cast<int>(yellowLaneLines.size()) >= 1 && static_cast<int>(whiteLaneLines.size()) >= 1)
         {
-            //ROS_INFO("TWO LANES FOUND");
+            ROS_INFO("TWO LANES FOUND");
             //Get solpes and intercepts from vectors
             double wSlope = whiteLaneLines.at(0).at(1); //Slope of the white line
             double wXCoord = whiteLaneLines.at(0).at(0); //X coordinate of the white line (at the bottom of the image)
             double ySlope = yellowLaneLines.at(0).at(1); //Slope of the yellow line
             double yXCoord = yellowLaneLines.at(0).at(0); //X coordinate of the yellow line (at the bottom of the image)
-            double adjustedWSlope = -1 * (wSlope + (wXCoord - CENTER_X) * WHITE_SLOPE_ADJUSTMENT_CONSTANT);
-            double adjustedYSlope = -1 * (ySlope + (yXCoord - CENTER_X) *  YELLOW_SLOPE_ADJUSTMENT_CONSTANT);
-            if(adjustedWSlope == 0){
-                adjustedWSlope = 0.01;
+            double distFromCenter = 0;
+            if (laneNumber == 0)
+            {
+                distFromCenter = 462 - (yXCoord + wXCoord) / 2;
             }
-            if(adjustedYSlope == 0){
-                adjustedYSlope = 0.01;
+            else if (laneNumber == 1)
+            {
+                distFromCenter = 462 - (wXCoord + yXCoord) / 2;
             }
-            steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * ((adjustedYSlope+adjustedWSlope)/2));
-            double lane_centering_adjustment = 0;
-            if(yXCoord>0.5 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
-                lane_centering_adjustment += ((1-YELLOW_LANE_CENTERING) - yXCoord) * CENTERING_STEERING_CONSTANT;
-            }
-            if(yXCoord<0.5 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
-                lane_centering_adjustment += (YELLOW_LANE_CENTERING - yXCoord) * CENTERING_STEERING_CONSTANT;
-            }
-            if(wSlope<0 && wXCoord< 1-WHITE_LANE_CENTERING){ // left turning
-                lane_centering_adjustment += ((1-WHITE_LANE_CENTERING) - wXCoord) * CENTERING_STEERING_CONSTANT;
-            }
-            if(wSlope>0 && wXCoord > WHITE_LANE_CENTERING){ // right turning
-                lane_centering_adjustment += (WHITE_LANE_CENTERING - wXCoord) * CENTERING_STEERING_CONSTANT;
-            }
-            steeringAngle += lane_centering_adjustment;
+            ROS_INFO("Center Steering Correction : %s", std::to_string(distFromCenter * CENT_CORR_CONST).c_str());
+
+            //Need these two calculations as the camera is not centered on the car
+            //This allows for average slope to account for the non-centered image and calculate steering angle from there
+            double difInSlope = abs(wSlope) - abs(ySlope);
+            double avgSlope = (wSlope + ySlope) / 2 + difInSlope / 2;
+            //Using hyperbolic tangent * the max steering angle to find the necesary steering angle
+            steeringAngle = 0.4 * tanh(avgSlope / TURN_CONST_HARD_OUT) + CENT_CORR_CONST * distFromCenter;
+            carSpeed = SPEED_CONST;
         }
         /** -------------------------------------------------**\
         * ---------------CONTROL FOR INNER LANES-------------- *
         \**--------------------------------------------------**/
-        else if (static_cast<int>(whiteLaneLines.size()) == 0 && static_cast<int>(yellowLaneLines.size()) == 1)
+        else if (static_cast<int>(whiteLaneLines.size()) == 0 && static_cast<int>(yellowLaneLines.size()) >= 1)
         {
-            //ROS_INFO("ONLY YELLOW LANE FOUND");
-            double ySlope = yellowLaneLines.at(0).at(1);
+            ROS_INFO("ONLY YELLOW LANE FOUND");
+            ///No white lane found but yellow lane found
+            //Most likely making a right turn in right la
+            double ySlope = yellowLaneLines.at(0).at(1) / 1.5; //This /1.5 just works since we do not have 2 slopes to average out
             double yXCoord = yellowLaneLines.at(0).at(0);
-            double adjustedYSlope = -1 * (ySlope + (yXCoord - CENTER_X) * YELLOW_SLOPE_ADJUSTMENT_CONSTANT);
-            steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * adjustedYSlope);
-            double lane_centering_adjustment = 0;
-            if(yXCoord>0.5 && yXCoord< 1-YELLOW_LANE_CENTERING){ // left turning
-                lane_centering_adjustment += ((1-YELLOW_LANE_CENTERING) - yXCoord) * CENTERING_STEERING_CONSTANT;
+
+            if (laneNumber == 0 && yXCoord <= 500)
+            {
+                ROS_INFO("LEFT LANE HARD LEFT TURN");
+                steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_HARD_IN);
+                carSpeed = 0.75;
             }
-            if(yXCoord<0.5 && yXCoord > YELLOW_LANE_CENTERING){ // right turning
-                lane_centering_adjustment += (YELLOW_LANE_CENTERING - yXCoord) * CENTERING_STEERING_CONSTANT;
+            else if (laneNumber == 0 && yXCoord > 500)
+            {
+                ROS_INFO("LEFT LANE SOFT LEFT TURN");
+                steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_SOFT_IN);
+                carSpeed = 1.0;
             }
-            steeringAngle += lane_centering_adjustment;
-         }
+            else if (laneNumber == 1 && yXCoord <= 300)
+            {
+                ROS_INFO("RIGHT LANE SOFT RIGHT TURN");
+                steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_SOFT_IN);
+                carSpeed = 1.0;
+            }
+            else if (laneNumber == 1 && yXCoord > 300)
+            {
+                ROS_INFO("RIGHT LANE HARD RIGHT TURN");
+                steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_HARD_IN);
+                carSpeed = 0.75;
+            }
+            else
+            {
+                ROS_INFO("Can't Determine Steering Angle");
+                carSpeed = 0.75;
+            }
+
+            //Center correction control once the car is almopst fully around the corner (when the slope returns to less than 1.5)
+            if (abs(ySlope) < 1.5 && laneNumber == 0)
+            {
+                steeringAngle += CENT_CORR_CONST * (820 - yXCoord);
+            }
+            else if (abs(ySlope) < 1.5 && laneNumber == 1)
+            {
+                steeringAngle += CENT_CORR_CONST * (125 - yXCoord);
+            }
+            carSpeed = SPEED_CONST;
+        }
         /** -------------------------------------------------**\
         * ---------------CONTROL FOR OUTER LANES-------------- *
         \**--------------------------------------------------**/
-        else if (static_cast<int>(yellowLaneLines.size()) == 0 && static_cast<int>(whiteLaneLines.size()) == 1)
+        else if (static_cast<int>(yellowLaneLines.size()) == 0 && static_cast<int>(whiteLaneLines.size()) >= 1)
         {
-            //ROS_INFO("ONLY WHITE LANE FOUND");
+            ROS_INFO("ONLY WHITE LANE FOUND");
             ///No yelow lane found but white lane found
             //Most likely making a left turn in the right lane
-            double wSlope = whiteLaneLines.at(0).at(1);
+            double wSlope = whiteLaneLines.at(0).at(1) / 1.5; //This /1.5 just works since we do not have 2 slopes to average out
             double wXCoord = whiteLaneLines.at(0).at(0);
-            double adjustedWSlope = -1 * (wSlope + (wXCoord - CENTER_X) *WHITE_SLOPE_ADJUSTMENT_CONSTANT);
-            if(adjustedWSlope == 0){
-                adjustedWSlope = 0.01;
+            if (laneNumber == 0 && wXCoord >= 500)
+            {
+                ROS_INFO("LEFT LANE HARD RIGHT TURN");
+                steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_HARD_OUT);
             }
-            steeringAngle = OUTER_TAHN_CONSTANT * tanh(INNER_TANH_CONSTANT * adjustedWSlope);
-            double lane_centering_adjustment = 0;
-            if(wSlope<0 && wXCoord< 1-WHITE_LANE_CENTERING){ // left turning
-                lane_centering_adjustment += ((1-WHITE_LANE_CENTERING) - wXCoord) * CENTERING_STEERING_CONSTANT;
+            else if (laneNumber == 0 && wXCoord < 500)
+            {
+                ROS_INFO("LEFT LANE SOFT RIGHT TURN");
+                steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_SOFT_OUT);
             }
-            if(wSlope>0 && wXCoord > WHITE_LANE_CENTERING){ // right turning
-                lane_centering_adjustment += (WHITE_LANE_CENTERING - wXCoord) * CENTERING_STEERING_CONSTANT;
+            else if (laneNumber == 1 && wXCoord >= 625)
+            {
+                ROS_INFO("RIGHT LANE SOFT LEFT TURN");
+                steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_SOFT_OUT);
             }
-            steeringAngle += lane_centering_adjustment;
-            
-        }
-        if(steeringAngle >0.40){
-            return 0.40;
-        }
-        if(steeringAngle <-0.40){
-            return -0.40;
+            else if (laneNumber == 1 && wXCoord < 625)
+            {
+                ROS_INFO("RIGHT LANE HARD LEFT TURN");
+                steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_HARD_OUT);
+            }
+            else
+            {
+                ROS_INFO("Can't Determine Steering Angle");
+            }
+
+            //Center correction control once the car is almopst fully around the corner (when the slope returns to less than 1.5)
+            if (abs(wSlope) < 1.5 && laneNumber == 1)
+            {
+                steeringAngle += CENT_CORR_CONST * (820 - wXCoord);
+            }
+            else if (abs(wSlope) < 1.5 && laneNumber == 0)
+            {
+                steeringAngle += CENT_CORR_CONST * (125 - wXCoord);
+            }
         }
         return steeringAngle;
     }
