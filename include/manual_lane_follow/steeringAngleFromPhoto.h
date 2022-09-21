@@ -40,7 +40,7 @@ class ManualSteeringControl{
         double carSpeed = 0.5;
         try
         {
-            Rect crop(320, 450, 960, 270);
+            Rect crop(0, 450, 1280, 270);
                 Mat croppedImage;
                 croppedImage = imageinRGB(crop);
                 //White mins and maxes for Hue-Saturation-Value model
@@ -69,10 +69,10 @@ class ManualSteeringControl{
                 whiteLaneLines = i.processImage(wErodeMat);
                 ROS_INFO("Yellow Lines: %s White Lines: %s",std::to_string(yellowLaneLines.size()).c_str(),std::to_string(whiteLaneLines.size()).c_str());
 
-//                 imshow("Crop",croppedImage);
-//                 imshow("Yellow",yErodeMat);
-//                 imshow("White", wErodeMat);
-//                 waitKey(3);
+                imshow("Crop",croppedImage);
+                imshow("Yellow",yErodeMat);
+                imshow("White", wErodeMat);
+                waitKey(3);
 
 
                 //Finds total number of lanes found
