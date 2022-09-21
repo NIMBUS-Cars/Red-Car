@@ -182,6 +182,6 @@ public:
             carSpeed = SPEED_CONST;
         }
 
-        return steeringAngle
+        return steeringAngle;
     }
 };
