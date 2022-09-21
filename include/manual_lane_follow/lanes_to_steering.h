@@ -109,6 +109,12 @@ public:
             steeringAngle += lane_centering_adjustment;
             
         }
+        if(steeringAngle >0.45){
+            return 0.45;
+        }
+        if(steeringAngle <-0.45){
+            return -0.45;
+        }
         return steeringAngle;
     }
 };
