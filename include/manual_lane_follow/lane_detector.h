@@ -15,7 +15,9 @@ using namespace std;
 
 class LaneDetector
 {
-
+    double line_seperation_distance = 0.3; // 300px / 1280px from testing
+    double image_width = 1280.0;
+    double min_height_percent_to_consider_line = 240;
 public:
     Mat getErode(Mat yBlurredImage)
     {
@@ -41,37 +43,38 @@ public:
         GaussianBlur(yColorFiltered, yBlurredImage, Size(5, 5), 0);
         return yBlurredImage;
     }
-    vector<vector<double>> processImage(Mat yErodeMat)
+    vector<vector<double>> processImage(Mat erodeMat)
     {
-        Mat displayForYellowLines(270, 960, CV_8UC3, Scalar(0, 0, 0));
-
         vector<int> countOfYellowLinesAddedToEachLane;
         vector<vector<double>> yellowLaneLines;
 
-        if (yErodeMat.size().height > 20)
+        if (erodeMat.size().height > 1)
         {
             vector<Vec4i> yellowLines;
-            vector<vector<Point>> yellowPointsForLines;
-            HoughLinesP(yErodeMat, yellowLines, 1, CV_PI / 180, 70, 30, 10);
+            vector<vector<Point2d>> yellowPointsForLines;
+            for(int i = 0; i<10;i++){
+                vector<Vec4i> linesFromOneRun;
+                HoughLinesP(erodeMat, linesFromOneRun, 1, CV_PI / 180, 70, 30, 10);
+                for(size_t j = 0; j<linesFromOneRun.size();j++){
+                    yellowLines.push_back(linesFromOneRun.at(j));
+                }
+            }
 
             for (size_t i = 0; i < yellowLines.size(); i++)
-            {
-                //line(displayForLines, Point(yellowLines[i][0], yellowLines[i][1]),Point( yellowLines[i][2], yellowLines[i][3]), Scalar(0,0,255), 3, 8 );
-                if (yellowLines[i][1] > 240 || yellowLines[i][3] > 240)
-                {
-                    line(displayForYellowLines, Point(yellowLines[i][0], yellowLines[i][1]), Point(yellowLines[i][2], yellowLines[i][3]), Scalar(0, 0, 255), 3, 8);
-                    vector<Point> newPoint;
-                    Point beginning(yellowLines[i][0], yellowLines[i][1]);
-                    Point end(yellowLines[i][2], yellowLines[i][3]);
+            {   
+                if(yellowLines[i][1] > min_height_percent_to_consider_line || yellowLines[i][3] > min_height_percent_to_consider_line){
+                    vector<Point2d> newPoint;
+                    Point2d beginning(yellowLines[i][0], yellowLines[i][1]);
+                    Point2d end(yellowLines[i][2], yellowLines[i][3]);
                     if (end.y > beginning.y)
                     {
-                        newPoint.push_back(end);
-                        newPoint.push_back(beginning);
+                        newPoint.push_back(end/image_width);
+                        newPoint.push_back(beginning/image_width);
                     }
                     else
                     {
-                        newPoint.push_back(beginning);
-                        newPoint.push_back(end);
+                        newPoint.push_back(beginning/image_width);
+                        newPoint.push_back(end/image_width);
                     }
                     yellowPointsForLines.push_back(newPoint);
                 }
@@ -83,9 +86,8 @@ public:
                 for (int i = 0; i < static_cast<int>(yellowLaneLines.size()); i++)
                 {
                     //averages the slope and x distance of all yellowLines in the same area
-                    if (abs(yellowPointsForLines.at(j).at(0).x - yellowLaneLines.at(i).at(0)) < 300 && static_cast<int>(yellowLaneLines.size()) < 10)
+                    if (abs(yellowPointsForLines.at(j).at(0).x - yellowLaneLines.at(i).at(0)) < line_seperation_distance)
                     {
-                        //test
                         double oldX = yellowLaneLines.at(i).at(0);
                         double oldSlope = yellowLaneLines.at(i).at(1);
                         double newSlope = slope(yellowPointsForLines.at(j).at(0), yellowPointsForLines.at(j).at(1));
@@ -113,7 +115,7 @@ public:
         }
         return yellowLaneLines;
     }
-    double slope(Point first,Point second){
+    double slope(Point2d first,Point2d second){
     // slope is taken such that horizontal side of camera is y axis where right side is positive and left side is negative
     // vertical side of camera is x axis where top side would be positve and bottom side is negative
     // so 0,0 to 1,1 should output -1
