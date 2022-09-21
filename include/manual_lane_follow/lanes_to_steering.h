@@ -21,7 +21,7 @@ public:
         * ------------------Define Constants------------------ *
         \**--------------------------------------------------**/
         double carSpeed;
-        double laneMidPointCorrectionCoefficient = (M_PI / 6) / 640 * 1.25;
+        double laneMidPointCorrectionCoefficient = 0;
         double TURN_CONST_HARD_OUT = 6.0;
         double TURN_CONST_SOFT_OUT = 2.0;
         double TURN_CONST_HARD_IN = 6.0;
@@ -43,11 +43,11 @@ public:
             double distFromCenter = 0;
             if (laneNumber == 0)
             {
-                distFromCenter = 462 - (yXCoord + wXCoord) / 2;
+                distFromCenter = 480 - (yXCoord + wXCoord) / 2;
             }
             else if (laneNumber == 1)
             {
-                distFromCenter = 462 - (wXCoord + yXCoord) / 2;
+                distFromCenter = 480 - (wXCoord + yXCoord) / 2;
             }
             ROS_INFO("Center Steering Correction : %s", std::to_string(distFromCenter * CENT_CORR_CONST).c_str());
 
@@ -70,13 +70,13 @@ public:
             double ySlope = yellowLaneLines.at(0).at(1) / 1.5; //This /1.5 just works since we do not have 2 slopes to average out
             double yXCoord = yellowLaneLines.at(0).at(0)*960;
 
-            if (laneNumber == 0 && yXCoord <= 500)
+            if (laneNumber == 0 && yXCoord <= 660)
             {
                 ROS_INFO("LEFT LANE HARD LEFT TURN");
                 steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_HARD_IN);
                 carSpeed = 0.75;
             }
-            else if (laneNumber == 0 && yXCoord > 500)
+            else if (laneNumber == 0 && yXCoord > 660)
             {
                 ROS_INFO("LEFT LANE SOFT LEFT TURN");
                 steeringAngle = 0.4 * tanh(ySlope / TURN_CONST_SOFT_IN);
@@ -103,7 +103,7 @@ public:
             //Center correction control once the car is almopst fully around the corner (when the slope returns to less than 1.5)
             if (abs(ySlope) < 1.5 && laneNumber == 0)
             {
-                steeringAngle += CENT_CORR_CONST * (820 - yXCoord);
+                steeringAngle += CENT_CORR_CONST * (835 - yXCoord);
             }
             else if (abs(ySlope) < 1.5 && laneNumber == 1)
             {
@@ -121,22 +121,22 @@ public:
             //Most likely making a left turn in the right lane
             double wSlope = whiteLaneLines.at(0).at(1) / 1.5; //This /1.5 just works since we do not have 2 slopes to average out
             double wXCoord = whiteLaneLines.at(0).at(0)*960;
-            if (laneNumber == 0 && wXCoord >= 500)
+            if (laneNumber == 0 && wXCoord >= 300)
             {
                 ROS_INFO("LEFT LANE HARD RIGHT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_HARD_OUT);
             }
-            else if (laneNumber == 0 && wXCoord < 500)
+            else if (laneNumber == 0 && wXCoord < 300)
             {
                 ROS_INFO("LEFT LANE SOFT RIGHT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_SOFT_OUT);
             }
-            else if (laneNumber == 1 && wXCoord >= 625)
+            else if (laneNumber == 1 && wXCoord >= 660)
             {
                 ROS_INFO("RIGHT LANE SOFT LEFT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_SOFT_OUT);
             }
-            else if (laneNumber == 1 && wXCoord < 625)
+            else if (laneNumber == 1 && wXCoord < 660)
             {
                 ROS_INFO("RIGHT LANE HARD LEFT TURN");
                 steeringAngle = 0.4 * tanh(wSlope / TURN_CONST_HARD_OUT);
