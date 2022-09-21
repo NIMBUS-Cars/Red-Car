@@ -52,7 +52,7 @@ public:
         {
             vector<Vec4i> yellowLines;
             vector<vector<Point2d>> yellowPointsForLines;
-            for(int i = 0; i<3;i++){
+            for(int i = 0; i<1;i++){
                 vector<Vec4i> linesFromOneRun;
                 HoughLinesP(erodeMat, linesFromOneRun, 1, CV_PI / 180, 70, 30, 10);
                 for(size_t j = 0; j<linesFromOneRun.size();j++){
