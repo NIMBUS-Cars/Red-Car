@@ -69,10 +69,10 @@ class ManualSteeringControl{
                 whiteLaneLines = i.processImage(wErodeMat);
                 ROS_INFO("Yellow Lines: %s White Lines: %s",std::to_string(yellowLaneLines.size()).c_str(),std::to_string(whiteLaneLines.size()).c_str());
 
-                imshow("Crop",croppedImage);
-                imshow("Yellow",yErodeMat);
-                imshow("White", wErodeMat);
-                waitKey(3);
+//                 imshow("Crop",croppedImage);
+//                 imshow("Yellow",yErodeMat);
+//                 imshow("White", wErodeMat);
+//                 waitKey(3);
 
 
                 //Finds total number of lanes found
