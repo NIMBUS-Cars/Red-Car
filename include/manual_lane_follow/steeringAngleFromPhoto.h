@@ -104,7 +104,7 @@ class ManualSteeringControl{
             ROS_ERROR("cv_bridge exception: %s", e.what());
             return 0;
         }
-        return steeringAngle;
+        return steeringAngle *-1;
         
     }
     int laneFinder(vector<vector<double> > wLines, vector<vector<double> > yLines, int lane)
