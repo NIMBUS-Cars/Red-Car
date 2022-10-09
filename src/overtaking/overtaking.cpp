@@ -9,7 +9,7 @@
 #include <ackermann_msgs/AckermannDrive.h>
 #include "torch/torch.h"
 #include "torch/script.h"
-
+//
 // MODULARIZE THIS LATER
 using namespace std;
 using namespace cv;
@@ -119,7 +119,7 @@ class LaneFollower{
     ackermann_msgs::AckermannDriveStamped drive_st_msg;
     ackermann_msgs::AckermannDrive drive_msg;
     drive_msg.steering_angle = steeringAngle;
-    drive_msg.speed = 1.2;//carSpeed;
+    drive_msg.speed = 0.7;//carSpeed;
     ROS_INFO("Test Steering Angle %s",std::to_string(steeringAngle).c_str());
     drive_st_msg.drive = drive_msg;
     drive_pub.publish(drive_st_msg);
